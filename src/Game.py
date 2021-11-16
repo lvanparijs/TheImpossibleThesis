@@ -102,7 +102,7 @@ class Game(pygame.sprite.LayeredUpdates):
 
     # Game Loop
     def game_loop(self):
-        song_name = 'C:/Users/lvanp/PycharmProjects/TheImpossibleThesis/src/res/Beat.wav' #Load song
+        song_name = 'C:/Users/lvanp/PycharmProjects/TheImpossibleThesis/src/res/SMBTRIM.wav' #Load song
         self.screen.blit(self.gradient, pygame.Rect((0, 0, self.screen_width, self.screen_height))) #Paint background
         self.player.attempts += 1 #Increment Attempts
 
@@ -110,8 +110,10 @@ class Game(pygame.sprite.LayeredUpdates):
         all_spikes = pygame.sprite.Group() #Initialise Spikes
         self.total_level_height = self.screen_height * 4 #Set Max level height
         l1 = Level(song_name, self.total_level_height, self.player, all_boxes, all_spikes, self.screen_height) #Initialise level
-
-        l1.generate_from_bpm(self.player.max_vel) #Generate Level
+        print("INITIALISE LEVEL")
+        #l1.generate_geometry(self.player.max_vel)
+        l1.generate_geometry_from_grammar(self.player.max_vel)
+        #l1.generate_from_bpm(self.player.max_vel) #Generate Level
 
         self.camera = Camera(self.complex_camera, l1.width, self.total_level_height) #Initialise camera
         P1 = self.player
@@ -154,13 +156,16 @@ class Game(pygame.sprite.LayeredUpdates):
                     if event.key == K_SPACE:
                         jump = False
 
-                if jump:
-                    P1.jump(l1.boxes)
+            if jump:
+                jump_cnt += 1
+                P1.jump(l1.boxes)
+                jump = False
 
             old_pos_x = P1.pos.x #Change position
 
             # Update player without checking for collisions
             P1.move(l1.width)
+
             self.game_over = P1.update(l1) #Update player and collisions
             if self.game_over:
                 self.explosion(P1, l1) #Animation
@@ -180,25 +185,25 @@ class Game(pygame.sprite.LayeredUpdates):
             self.screen.blit(text, (40, 400))
 
             #Simulate and draw jump/no_jump
-            pts = []
-            pts_no_jump = []
-            alpha = 255
-            for i in range(0,num_pts):
-               pts += [P1.sim_jump(i)]
-               if i < 20:
-                   pts_no_jump += [P1.sim_no_jump(i)]
+            #pts = []
+            #pts_no_jump = []
+            #alpha = 255
+            #for i in range(0,num_pts):
+            #   pts += [P1.sim_jump(i)]
+            #   if i < 20:
+            #       pts_no_jump += [P1.sim_no_jump(i)]
 
-            for i in range(1,len(pts)):
-               alpha -= int(255/num_pts)
-               self.aaline(self.screen, (0,255,0,alpha) , (cam_rect.centerx+pts[i-1].x,cam_rect.bottom+pts[i-1].y) ,  (cam_rect.centerx+pts[i].x,cam_rect.bottom+pts[i].y),10)
-               if i < 20:
-                   self.aaline(self.screen, (255, 255, 0, alpha),(cam_rect.centerx + pts_no_jump[i - 1].x, cam_rect.bottom + pts_no_jump[i - 1].y),(cam_rect.centerx + pts_no_jump[i].x, cam_rect.bottom + pts_no_jump[i].y), 10)
-            alpha = 255
-            for i in range(1,len(last_jump)):
-                alpha -= int(255 / num_pts)
-                self.aaline(self.screen, (255, 0, 0, alpha),
-                            (last_jump[i - 1].x-jump_adjust_x, last_jump[i - 1].y-jump_adjust_y),
-                            (last_jump[i].x-jump_adjust_x, last_jump[i].y-jump_adjust_y), 10)
+            #for i in range(1,len(pts)):
+            #   alpha -= int(255/num_pts)
+            #   self.aaline(self.screen, (0,255,0,alpha) , (cam_rect.centerx+pts[i-1].x,cam_rect.bottom+pts[i-1].y) ,  (cam_rect.centerx+pts[i].x,cam_rect.bottom+pts[i].y),10)
+            #   if i < 20:
+            #       self.aaline(self.screen, (255, 255, 0, alpha),(cam_rect.centerx + pts_no_jump[i - 1].x, cam_rect.bottom + pts_no_jump[i - 1].y),(cam_rect.centerx + pts_no_jump[i].x, cam_rect.bottom + pts_no_jump[i].y), 10)
+            #alpha = 255
+            #for i in range(1,len(last_jump)):
+            #    alpha -= int(255 / num_pts)
+            #    self.aaline(self.screen, (255, 0, 0, alpha),
+            #                (last_jump[i - 1].x-jump_adjust_x, last_jump[i - 1].y-jump_adjust_y),
+            #                (last_jump[i].x-jump_adjust_x, last_jump[i].y-jump_adjust_y), 10)
 
 
             P1.draw(self.screen, self.camera) #Draw player

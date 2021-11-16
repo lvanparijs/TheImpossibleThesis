@@ -1,5 +1,7 @@
 import copy
 import math
+import random
+import sys
 
 import numpy as np
 import pygame
@@ -12,6 +14,7 @@ TIMESTEP = 1 / FPS
 GRAVITY = 0.8
 BUFFER = 10
 JUMP_VEL = -15
+BLOCK_SIZE = 40
 
 
 class Player(pygame.sprite.Sprite):
@@ -62,7 +65,7 @@ class Player(pygame.sprite.Sprite):
                 # Top collision
                 if self.rect.bottom >= e.rect.top and self.rect.bottomright[0] >= e.rect.bottomleft[0]:
                     self.vel.y = 0
-                    self.pos.y = e.rect.top
+                    self.pos.y = e.rect.top+1 #+1 is to solve the jittering when the player is moving on a flat surface
                     self.rotate = False
                     self.angle = 0
                 # Side collision
@@ -96,10 +99,8 @@ class Player(pygame.sprite.Sprite):
 
     def get_jump_length(self):
         _, y_start = self.sim_jump(1)
-        print(y_start)
         for i in range(2, 50):
             _, y = self.sim_jump(i)
-            print(y)
             if y >= y_start:
                 return i  # Jump complete
 
@@ -108,6 +109,9 @@ class Player(pygame.sprite.Sprite):
 
     def sim_no_jump(self, t):
         return vec(t * self.max_vel, 0) + 0.5 * vec(0, GRAVITY) * (t * t)
+
+    def sim_jump_with_params(self, t, v, j_v, g):
+        return (vec(v, j_v) * t) + 0.5 * vec(0, g) * (t * t)
 
     def set_velocity(self, jump_time):
         self.max_vel = (self.pixels_per_second / FPS)
@@ -166,3 +170,34 @@ class Player(pygame.sprite.Sprite):
         rotated_image = pygame.transform.rotate(image, math.degrees(-angle))
         new_rect = rotated_image.get_rect(center=image.get_rect(topleft=topleft).center)
         return rotated_image, new_rect
+
+    def parameter_tuning(self,error):
+        max_g = 2
+        min_g = 0.1
+        increment = 0.01
+
+        g_range = [min_g,max_g]
+        g_costs = [10,10]
+        while (sum(g_costs)/2) > 2:
+            if g_costs[0] < g_costs[1]:
+                g_range = [g_range[0], g_range[1]-increment]
+            elif g_costs[0] > g_costs[1]:
+                g_range = [g_range[0]+increment, g_range[1]]
+            elif g_range[0] > g_range[1]: #Cross
+                self.gravity = sum(g_range) / 2
+                return
+
+            for j in range(0,len(g_range)):
+                pts = []
+                i = 1
+                pts += [self.sim_jump_with_params(i, self.max_vel, JUMP_VEL, g_range[j])]
+                while pts[-1][1] < 0:
+                    pts += [self.sim_jump_with_params(i, self.max_vel, JUMP_VEL, g_range[j])]
+                    i += 1
+                #print(pts[-1][0]) #Distance from desired jump distance)
+                g_costs[j] = abs((pts[-1][0] - 5 * BLOCK_SIZE)) #Distance from desired jump distance
+
+
+        self.gravity = sum(g_range)/2
+
+

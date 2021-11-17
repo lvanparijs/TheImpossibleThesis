@@ -102,7 +102,7 @@ class Game(pygame.sprite.LayeredUpdates):
 
     # Game Loop
     def game_loop(self):
-        song_name = 'C:/Users/lvanp/PycharmProjects/TheImpossibleThesis/src/res/SMBTRIM.wav' #Load song
+        song_name = 'C:/Users/lvanp/PycharmProjects/TheImpossibleThesis/src/res/trumpet.wav' #Load song
         self.screen.blit(self.gradient, pygame.Rect((0, 0, self.screen_width, self.screen_height))) #Paint background
         self.player.attempts += 1 #Increment Attempts
 

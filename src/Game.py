@@ -7,12 +7,24 @@ import playsound as playsound
 import pygame
 from pygame import gfxdraw, font, KEYDOWN, K_SPACE, KEYUP, MOUSEBUTTONDOWN, MOUSEBUTTONUP
 
+from os.path import exists
+
+import pickle
+
+from src.Box import Box
 from src.Camera import Camera
+from src.Lava import Lava
 from src.Level import Level
+from src.LineCritic import LineCritic
 from src.Particle import Particle
 
 
 # GLOBAL STUFF
+from src.Platform import Platform
+from src.Song import Song
+from src.Spike import Spike
+from src.VarietyCritic import VarietyCritic
+
 vec = pygame.math.Vector2
 ENTITY_SIZE = 40
 FPS = 60
@@ -102,17 +114,85 @@ class Game(pygame.sprite.LayeredUpdates):
 
     # Game Loop
     def game_loop(self):
-        song_name = 'C:/Users/lvanp/PycharmProjects/TheImpossibleThesis/src/res/trumpet.wav' #Load song
+        song_name = 'C:/Users/lvanp/PycharmProjects/TheImpossibleThesis/src/res/SMBTS.wav' #Load song
         self.screen.blit(self.gradient, pygame.Rect((0, 0, self.screen_width, self.screen_height))) #Paint background
         self.player.attempts += 1 #Increment Attempts
 
-        all_boxes = pygame.sprite.Group() #Initialise boxes
-        all_spikes = pygame.sprite.Group() #Initialise Spikes
+        #all_boxes = pygame.sprite.Group() #Initialise boxes
+        #all_spikes = pygame.sprite.Group() #Initialise Spikes
         self.total_level_height = self.screen_height * 4 #Set Max level height
-        l1 = Level(song_name, self.total_level_height, self.player, all_boxes, all_spikes, self.screen_height) #Initialise level
-        print("INITIALISE LEVEL")
+        song = Song(song_name)
+
+        if not exists('C:/Users/lvanp/PycharmProjects/TheImpossibleThesis/src/lvl/TestLevel.obj'):
+            #l1 = Level(song, self.total_level_height, self.player, all_boxes, all_spikes, self.screen_height) #Initialise level
+            print("GENERATING CANDIDATE LEVELS...")
+            critics = [LineCritic(song.y, song.beat_frames, song.spb), VarietyCritic()]
+            print("INIT CRITICS")
+            levels = []
+            for i in range(0,5):#100 Levels
+                levels += [Level(song, self.total_level_height, self.player, pygame.sprite.Group(), pygame.sprite.Group(), self.screen_height)]
+                levels[i].generate_geometry_from_grammar_rnd(self.player.max_vel)
+                print(str(i/5)+"%")
+            print("CRITIQUING LEVEL...")
+            lvl_scores = []
+            for lvl in levels:
+                lvl_scores += [0]
+                for c in critics:
+                    lvl_scores[-1] += c.critique(lvl)
+                    print(lvl_scores[-1])
+            print(lvl_scores)
+            print("CHOOSING BEST LEVEL...")
+            l1 = levels[lvl_scores.index(min(lvl_scores))]
+            print("SAVING LEVEL")
+            filename = 'C:/Users/lvanp/PycharmProjects/TheImpossibleThesis/src/lvl/TestLevel.obj'
+            filehandler = open(filename,'wb')
+            #pickle.dump(l1.get_lvl_data(),filehandler)
+
+            #Extract boxes, Extract Spikes
+            boxes_pos = []
+            for box in l1.boxes:
+                if type(box) is not Platform:
+                    boxes_pos += [box.pos]
+
+            spikes_pos = []
+            lava_pos = []
+            for spike in l1.spikes:
+                if type(spike) is Spike:
+                    spikes_pos += [spike.pos]
+                elif type(spike) is Lava:
+                    lava_pos += [spike.pos]
+
+            pickle.dump(boxes_pos,filehandler)
+            pickle.dump(spikes_pos, filehandler)
+            pickle.dump(lava_pos, filehandler)
+
+        else:
+            f = open('C:/Users/lvanp/PycharmProjects/TheImpossibleThesis/src/lvl/TestLevel.obj','rb')
+            boxes_pos = pickle.load(f)
+            spikes_pos = pickle.load(f)
+            lava_pos = pickle.load(f)
+            print(boxes_pos)
+            print(spikes_pos)
+            print(lava_pos)
+            #Add bxes with positions
+            #Add spikes and lava with positions
+            bxes = pygame.sprite.Group()
+            spks = pygame.sprite.Group()
+            for b_pos in boxes_pos:
+                bxes.add(Box(b_pos))
+
+            for spike_pos in spikes_pos:
+                spks.add(Spike(spike_pos))
+            for lva_pos in spikes_pos:
+                spks.add(Lava(lva_pos))
+            l1 = Level(song, self.total_level_height, self.player, bxes, spks,
+                  self.screen_height)
         #l1.generate_geometry(self.player.max_vel)
-        l1.generate_geometry_from_grammar(self.player.max_vel)
+        #l1.generate_geometry_from_grammar_rnd(self.player.max_vel)
+        #ln = LineCritic(song.y, l1.beat_frames, l1.spb)
+        #print(ln.critique(l1,self.player.max_vel))
+
+
         #l1.generate_from_bpm(self.player.max_vel) #Generate Level
 
         self.camera = Camera(self.complex_camera, l1.width, self.total_level_height) #Initialise camera

@@ -13,6 +13,7 @@ from src.Spike import Spike
 
 import matplotlib.pyplot as plt
 import librosa.display
+from pyAudioAnalysis import audioTrainTest as att
 
 vec = pygame.math.Vector2
 BOX_SIZE = 40
@@ -26,77 +27,52 @@ class Level:
 
     ##A level is essentially a collection of obstacles, the ground is always the same, created based on a music track
 
-    def __init__(self, file_name, height, player, boxes, spikes,screen_height):
-        if file_name is None:
+    def __init__(self, song, height, player, boxes, spikes,screen_height):
+        if song is None:
             self.width = 640
             self.tempo = 0
         else:
-            self.file_name = file_name #Path to the music file
-            self.y, self.sampling_rate = librosa.load(self.file_name) #Audio time series and sampling rate of the song
-            self.song_duration = librosa.get_duration(y=self.y, sr=self.sampling_rate) #Time in s
-            self.tempo, self.beat_frames = librosa.beat.beat_track(y=self.y, sr=self.sampling_rate)
-
-            #self.pitches, self.magnitudes = librosa.core.piptrack(y=self.y, sr=self.sampling_rate, fmin=75, fmax=1600)
-            #print(self.magnitudes[:,100].argmax())
-
-            print("PYIN")
-
-            f0, voiced_flag, voiced_probs = librosa.pyin(self.y, fmin=librosa.note_to_hz('C2'),
-                                                         fmax=librosa.note_to_hz('C7'))
-            #print(f0)
-            #plt.figure()
-            times = librosa.times_like(f0)
-            D = librosa.amplitude_to_db(np.abs(librosa.stft(self.y)), ref=np.max)
-            print(D)
-            fig, ax = plt.subplots()
-            img = librosa.display.specshow(D, x_axis='time', y_axis='log', ax=ax)
-            print(img)
-            ax.set(title='pYIN fundamental frequency estimation')
-            fig.colorbar(img, ax=ax, format="%+2.f dB")
-            ax.plot(times, f0, label='f0', color='cyan', linewidth=3)
-            ax.legend(loc='upper right')
-            plt.show()
-
-
-            self.f0 = f0
-            self.times_f0 = times
-
-
-            bps = self.tempo/60 #beats per second
-            #print("BPM")
-            #print(self.tempo)
-
-            self.spb = 1/bps #Seconds per beat
-            self.beat_times = 0
+            #TODO: Add check if level for this song has already been generated
+            self.song = song
             self.action_list = []
+            #self.spb = song.spb
+            self.beat_times = range(0, len(self.song.beat_frames))
+            self.beat_times *= self.song.spb
+            self.generate_rhythm()
+            #self.beat_frames = song.beat_frames
 
 
-            player.pixels_per_second = int((5*BOX_SIZE)/self.spb)#Desired jump distance
+            self.height_line = []
+
+            player.pixels_per_second = int((5*BOX_SIZE)/self.song.spb)#Desired jump distance
 
             player.set_velocity(player.get_jump_length())
             player.parameter_tuning(5)
-            self.width = self.song_duration*player.max_vel*60  # Width of the level in pixels, determined by length of song, speed of player
-            print(f0.tolist())
+            self.width = song.song_duration*player.max_vel*60  # Width of the level in pixels, determined by length of song, speed of player
             print("DONE PYIN")
+
+            #Critics needed to be extracted
+            print("CLASSIFYING")
+            class_id, probability, classes = att.file_classification(self.song.file_name, "C:/Users/lvanp/PycharmProjects/TheImpossibleThesis/src/res/svm_rbf_musical_genre_6", "svm")
+            print(class_id)
+            print(probability)
+            print(classes)
+            print("DONE CLASSIFYING")
 
         self.boxes = boxes #Set of boxes in the level
         self.spikes = spikes #Set of spikes in the level
         self.height = height #Height of the level
 
+        self.max_height = 6
+
         self.box_frequency = 2 #Amount of boxes per 100 pixels, for random generation
         self.spike_frequency = 1 #Amount of spikes per 100 pixels
-        self.ground_level = int(screen_height * 0.76)#Ground level
+        self.ground_level = int(screen_height * 0.9)#Ground level
         self.platform = Platform(vec(0, self.ground_level),self.width) #Main platform of the level
         self.boxes.add(self.platform)
 
-    def detect_pitch(self, t):
-        i = len(self.times_f0)-1
-        note = 0
-        while t < self.times_f0[i]:
-            note = self.f0[i]
-            i -= 1
-
-        return note
+    def get_lvl_data(self):
+        return self.boxes,self.spikes
 
     def generate_flat_level(self):
         return
@@ -561,6 +537,92 @@ class Level:
                         self.empty_platform()
             height_cnt = max(0,height_cnt)
 
+    def generate_geometry_from_grammar_rnd(self,vel):
+        #self.beat_times = range(0, len(self.song.beat_frames))
+        #self.beat_times *= self.song.spb
+        notes = []
+        print("GENERATING GEOMETRY")
+
+        #self.generate_rhythm()
+
+        obstacle_pos = self.beat_times * vel * 60
+        height_cnt = 0 #Floor == 0
+        self.height_line += [height_cnt]
+        for i in range(1, len(obstacle_pos)):
+            if self.action_list[i]:  # Jump
+                rnd_direction = random.uniform(0, 1) #Randomise the directions
+                if rnd_direction > 0.67: #UP
+                    rnd_threshold = random.uniform(0, 1)
+                    if random.uniform(0, 1) > rnd_threshold:
+                        self.jump_up_1(obstacle_pos[i], height_cnt)
+                        height_cnt += 1
+                    else:
+                        self.jump_up_2(obstacle_pos[i], height_cnt)
+                        height_cnt += 2
+                elif rnd_direction > 0.33: #FLAT
+                    if height_cnt > 0: #off the floor
+                        rnd_threshold = random.uniform(0,1)
+                        if random.uniform(0,1) > rnd_threshold:
+                            self.flat_jump_lava(obstacle_pos[i],height_cnt)
+                        else:
+                            n_spikes = random.randint(1,3)
+                            if n_spikes == 4 or n_spikes == 0:
+                                print("PROBLEM 1")
+
+                            if n_spikes == 1:
+                                self.flat_blocks_spike_1(obstacle_pos[i],height_cnt)
+                            elif n_spikes == 2:
+                                self.flat_blocks_spike_2(obstacle_pos[i],height_cnt)
+                            elif n_spikes == 3:
+                                self.flat_blocks_spike_3(obstacle_pos[i],height_cnt)
+
+                    else: #floor
+                        height_cnt = 0
+                        n_spikes = random.randint(1,3)
+                        if n_spikes == 4 or n_spikes == 0:
+                            print("PROBLEM 2")
+                        if n_spikes == 1:
+                            self.spikes_flat_1(obstacle_pos[i], height_cnt)
+                        elif n_spikes == 2:
+                            self.spikes_flat_2(obstacle_pos[i], height_cnt)
+                        elif n_spikes == 3:
+                            self.spikes_flat_3(obstacle_pos[i], height_cnt)
+
+                else: #DOWN and on the floor = FLAT
+                    if height_cnt > 0:
+                        self.jump_down(obstacle_pos[i], height_cnt)
+                        height_cnt -= 1
+                    else:
+                        height_cnt = 0
+                        n_spikes = random.randint(1,3)
+                        if n_spikes == 4 or n_spikes == 0:
+                            print("PROBLEM 3")
+                        if n_spikes == 1:
+                            self.spikes_flat_1(obstacle_pos[i], height_cnt)
+                        elif n_spikes == 2:
+                            self.spikes_flat_2(obstacle_pos[i], height_cnt)
+                        elif n_spikes == 3:
+                            self.spikes_flat_3(obstacle_pos[i], height_cnt)
+
+            else:
+                rnd_direction = random.uniform(0, 1)  # Randomise the directions
+                if rnd_direction > 0.67:  # UP/FLAT
+                    self.flat_blocks(obstacle_pos[i], height_cnt)
+                else:
+                    if height_cnt > 0: #Off the floor
+                        self.fall_down(obstacle_pos[i], height_cnt)
+                        height_cnt -= 1
+                    else:
+                        self.empty_platform()
+            height_cnt = max(0,height_cnt)
+            height_cnt = min(self.max_height,height_cnt)
+            self.height_line += [height_cnt]
+
+    def generate_final_level(self,vel):
+        n_lvls = 100
+        for i in range(0,n_lvls):
+            self.generate_geometry_from_grammar_rnd(vel)
+
     def get_next_geometry_piece(self): #Geomety Generation Grammar
         #Picks a piece at random based on whether it has to go down(-1), flat(0), up(1)
         return
@@ -570,21 +632,21 @@ class Level:
 
     def spikes_flat_1(self,pos,height):
         self.spikes.add(Spike((pos + BOX_SIZE,
-                       self.ground_level - BOX_SIZE - BOX_SIZE / 2 + 2 - BOX_SIZE * height)))
+                       self.ground_level - BOX_SIZE / 2 + 2 - BOX_SIZE * height)))
 
     def spikes_flat_2(self,pos,height):
         self.spikes.add(Spike((pos + BOX_SIZE,
-                               self.ground_level - BOX_SIZE - BOX_SIZE / 2 + 2 - BOX_SIZE * height)))
+                               self.ground_level - BOX_SIZE / 2 + 2 - BOX_SIZE * height)))
         self.spikes.add(Spike((pos + BOX_SIZE + BOX_SIZE,
-                               self.ground_level - BOX_SIZE - BOX_SIZE / 2 + 2 - BOX_SIZE * height)))
+                               self.ground_level - BOX_SIZE / 2 + 2 - BOX_SIZE * height)))
 
     def spikes_flat_3(self,pos,height):
         self.spikes.add(Spike((pos + BOX_SIZE,
-                               self.ground_level - BOX_SIZE - BOX_SIZE / 2 + 2 - BOX_SIZE * height)))
+                               self.ground_level - BOX_SIZE / 2 + 2 - BOX_SIZE * height)))
         self.spikes.add(Spike((pos + BOX_SIZE*2,
-                               self.ground_level - BOX_SIZE - BOX_SIZE / 2 + 2 - BOX_SIZE * height)))
+                               self.ground_level - BOX_SIZE / 2 + 2 - BOX_SIZE * height)))
         self.spikes.add(Spike((pos + BOX_SIZE*3,
-                               self.ground_level - BOX_SIZE - BOX_SIZE / 2 + 2 - BOX_SIZE * height)))
+                               self.ground_level - BOX_SIZE / 2 + 2 - BOX_SIZE * height)))
 
     def fall_down(self,pos,height):
         if height > 1:
@@ -636,7 +698,7 @@ class Level:
             self.boxes.add(
                 Box((pos + BOX_SIZE * 4, self.ground_level - BOX_SIZE / 2 - BOX_SIZE)))
             self.spikes.add(Lava((pos + BOX_SIZE * 4, self.ground_level)))
-            self.spikes_flat_3(pos, height-1)
+            self.spikes_flat_3(pos, height)
 
 
     def jump_up_2(self,pos,height):
@@ -658,7 +720,7 @@ class Level:
                 Box((pos + BOX_SIZE * 4,
                      self.ground_level - BOX_SIZE / 2 - BOX_SIZE * 2)))
             self.spikes.add(Lava((pos + BOX_SIZE * 4, self.ground_level)))
-            self.spikes_flat_3(pos,height-1)
+            self.spikes_flat_3(pos,height)
 
     def flat_blocks(self,pos,height):
         for i in range(0,5):
@@ -674,7 +736,7 @@ class Level:
             for j in range(0, 5):
                 self.boxes.add(Box((pos + BOX_SIZE * j,
                                     self.ground_level - BOX_SIZE / 2 - BOX_SIZE * height)))
-            if height > 1:
+            if height >= 1:
                 for j in range(0, 5):
                     self.spikes.add(Lava((pos + BOX_SIZE * j, self.ground_level)))
 
@@ -683,11 +745,12 @@ class Level:
                    self.ground_level - BOX_SIZE - BOX_SIZE / 2 + 2 - BOX_SIZE * height)))
 
     def flat_blocks_spike_2(self,pos,height):
+        print(height)
         if height > 0: #Off the floor
             for j in range(0, 5):
                 self.boxes.add(Box((pos + BOX_SIZE * j,
                                     self.ground_level - BOX_SIZE / 2 - BOX_SIZE * height)))
-            if height > 1:
+            if height >= 1:
                 for j in range(0, 5):
                     self.spikes.add(Lava((pos + BOX_SIZE * j, self.ground_level)))
 
@@ -700,11 +763,12 @@ class Level:
                    self.ground_level - BOX_SIZE - BOX_SIZE / 2 + 2 - BOX_SIZE * height)))
 
     def flat_blocks_spike_3(self,pos,height):
+        print(height)
         if height > 0: #Off the floor
             for j in range(0, 5):
                 self.boxes.add(Box((pos + BOX_SIZE * j,
                                     self.ground_level - BOX_SIZE / 2 - BOX_SIZE * height)))
-            if height > 1:
+            if height >= 1:
                 for j in range(0, 5):
                     self.spikes.add(Lava((pos + BOX_SIZE * j, self.ground_level)))
 

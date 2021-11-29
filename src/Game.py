@@ -1,11 +1,14 @@
+import copy
 import math
+import random
 import sys
 
 from math import cos
+import numpy as np
 
 import playsound as playsound
 import pygame
-from pygame import gfxdraw, font, KEYDOWN, K_SPACE, KEYUP, MOUSEBUTTONDOWN, MOUSEBUTTONUP
+from pygame import gfxdraw, font, KEYDOWN, K_SPACE, KEYUP, MOUSEBUTTONDOWN, MOUSEBUTTONUP, mixer
 
 from os.path import exists
 
@@ -13,14 +16,18 @@ import pickle
 
 from src.Box import Box
 from src.Camera import Camera
+from src.ComponentFrequencyCritic import ComponentFrequencyCritic
+from src.DifficultyCritic import DifficultyCritic
+from src.EmptynessCritic import EmptynessCritic
 from src.Lava import Lava
-from src.Level import Level
+from src.Level import Level, BOX_SIZE
+from src.LevelPiece import LevelPiece
 from src.LineCritic import LineCritic
 from src.Particle import Particle
 
-
 # GLOBAL STUFF
 from src.Platform import Platform
+from src.Player import Player
 from src.Song import Song
 from src.Spike import Spike
 from src.VarietyCritic import VarietyCritic
@@ -65,7 +72,8 @@ class Game(pygame.sprite.LayeredUpdates):
 
         self.is_jump = False  # Stores if player is jumping or not
 
-        self.gradient = self.vertical_gradient((self.screen_width, self.screen_height), (1, 53, 61, 255),(52, 157, 172, 255)) #Nice background gradient
+        self.gradient = self.vertical_gradient((self.screen_width, self.screen_height), (1, 53, 61, 255),
+                                               (52, 157, 172, 255))  # Nice background gradient
         # Update screen
         pygame.display.flip()
 
@@ -76,10 +84,11 @@ class Game(pygame.sprite.LayeredUpdates):
         pygame.display.update()
         self.game_loop()
         self.restart = self.game_over_screen()
+        mixer.init()
 
     def game_over_screen(self):
         running = True
-        lvl = Level(None, self.screen_height, self.player, pygame.sprite.Group(), pygame.sprite.Group(), self.screen_height * 0.9)
+        lvl = Level(None, self.screen_height, self.player, [], self.screen_height * 0.9,[])
         text = self.text_format("GAME OVER", font, 100, white)
         text_menu = self.text_format("Press R to restart \t Press ESC for main menu", font, 20, white)
 
@@ -96,7 +105,7 @@ class Game(pygame.sprite.LayeredUpdates):
             self.screen.blit(self.gradient, pygame.Rect((0, 0, self.screen_width, self.screen_height)))
             self.screen.blit(text, (40, 250))
             self.screen.blit(text_menu, (60, 450))
-            lvl.get_all_obstacles(0,self.screen_width).draw(self.screen)
+            lvl.get_all_obstacles(0, self.screen_width).draw(self.screen)
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -104,6 +113,7 @@ class Game(pygame.sprite.LayeredUpdates):
                     quit()
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_r:
+                        mixer.music.stop()
                         running = False
                         return True
                     elif event.key == pygame.K_ESCAPE:
@@ -114,88 +124,50 @@ class Game(pygame.sprite.LayeredUpdates):
 
     # Game Loop
     def game_loop(self):
-        song_name = 'C:/Users/lvanp/PycharmProjects/TheImpossibleThesis/src/res/SMBTS.wav' #Load song
-        self.screen.blit(self.gradient, pygame.Rect((0, 0, self.screen_width, self.screen_height))) #Paint background
-        self.player.attempts += 1 #Increment Attempts
+        song_name = 'C:/Users/lvanp/PycharmProjects/TheImpossibleThesis/src/res/BeatShort.wav'  # Load song
+        mixer.music.load(song_name)
+        self.screen.blit(self.gradient, pygame.Rect((0, 0, self.screen_width, self.screen_height)))  # Paint background
+        self.player.attempts += 1  # Increment Attempts
 
-        #all_boxes = pygame.sprite.Group() #Initialise boxes
-        #all_spikes = pygame.sprite.Group() #Initialise Spikes
-        self.total_level_height = self.screen_height * 4 #Set Max level height
+        self.total_level_height = self.screen_height * 4  # Set Max level height
         song = Song(song_name)
 
-        if not exists('C:/Users/lvanp/PycharmProjects/TheImpossibleThesis/src/lvl/TestLevel.obj'):
-            #l1 = Level(song, self.total_level_height, self.player, all_boxes, all_spikes, self.screen_height) #Initialise level
+        if not exists('C:/Users/lvanp/PycharmProjects/TheImpossibleThesis/src/lvl/TestLevel1.obj'):
+            num_levels = 10
             print("GENERATING CANDIDATE LEVELS...")
-            critics = [LineCritic(song.y, song.beat_frames, song.spb), VarietyCritic()]
-            print("INIT CRITICS")
-            levels = []
-            for i in range(0,5):#100 Levels
-                levels += [Level(song, self.total_level_height, self.player, pygame.sprite.Group(), pygame.sprite.Group(), self.screen_height)]
-                levels[i].generate_geometry_from_grammar_rnd(self.player.max_vel)
-                print(str(i/5)+"%")
-            print("CRITIQUING LEVEL...")
-            lvl_scores = []
-            for lvl in levels:
-                lvl_scores += [0]
-                for c in critics:
-                    lvl_scores[-1] += c.critique(lvl)
-                    print(lvl_scores[-1])
-            print(lvl_scores)
-            print("CHOOSING BEST LEVEL...")
-            l1 = levels[lvl_scores.index(min(lvl_scores))]
+            critics = [LineCritic(), VarietyCritic(), ComponentFrequencyCritic(), EmptynessCritic()]
+
+            l1 = self.evolve_levels(self.player, song, critics, 100, 10, 0.05, 10) #GA
+
             print("SAVING LEVEL")
-            filename = 'C:/Users/lvanp/PycharmProjects/TheImpossibleThesis/src/lvl/TestLevel.obj'
-            filehandler = open(filename,'wb')
-            #pickle.dump(l1.get_lvl_data(),filehandler)
+            filename = 'C:/Users/lvanp/PycharmProjects/TheImpossibleThesis/src/lvl/TestLevel1.obj'
 
-            #Extract boxes, Extract Spikes
-            boxes_pos = []
-            for box in l1.boxes:
-                if type(box) is not Platform:
-                    boxes_pos += [box.pos]
+            # pickle.dump(l1.get_lvl_data(),filehandler)
+            with open(filename, 'wb') as filehandler:
+                pickle.dump(self.player.gravity, filehandler)
+                pickle.dump(l1.pieces, filehandler)
 
-            spikes_pos = []
-            lava_pos = []
-            for spike in l1.spikes:
-                if type(spike) is Spike:
-                    spikes_pos += [spike.pos]
-                elif type(spike) is Lava:
-                    lava_pos += [spike.pos]
-
-            pickle.dump(boxes_pos,filehandler)
-            pickle.dump(spikes_pos, filehandler)
-            pickle.dump(lava_pos, filehandler)
+            filehandler.close()
 
         else:
-            f = open('C:/Users/lvanp/PycharmProjects/TheImpossibleThesis/src/lvl/TestLevel.obj','rb')
-            boxes_pos = pickle.load(f)
-            spikes_pos = pickle.load(f)
-            lava_pos = pickle.load(f)
-            print(boxes_pos)
-            print(spikes_pos)
-            print(lava_pos)
-            #Add bxes with positions
-            #Add spikes and lava with positions
-            bxes = pygame.sprite.Group()
-            spks = pygame.sprite.Group()
-            for b_pos in boxes_pos:
-                bxes.add(Box(b_pos))
+            with open('C:/Users/lvanp/PycharmProjects/TheImpossibleThesis/src/lvl/TestLevel1.obj', 'rb+') as f:
+                player_grav = pickle.load(f)
+                print(player_grav)
+                pieces = pickle.load(f)
+                print(pieces)
+                f.close()
 
-            for spike_pos in spikes_pos:
-                spks.add(Spike(spike_pos))
-            for lva_pos in spikes_pos:
-                spks.add(Lava(lva_pos))
-            l1 = Level(song, self.total_level_height, self.player, bxes, spks,
-                  self.screen_height)
-        #l1.generate_geometry(self.player.max_vel)
-        #l1.generate_geometry_from_grammar_rnd(self.player.max_vel)
-        #ln = LineCritic(song.y, l1.beat_frames, l1.spb)
-        #print(ln.critique(l1,self.player.max_vel))
+                self.player.gravity = player_grav
+                self.player.set_velocity(int((5 * BOX_SIZE) / song.spb))
+                l1 = Level(song, self.total_level_height, self.player, pieces, self.screen_height,[])
+        # l1.generate_geometry(self.player.max_vel)
+        # l1.generate_geometry_from_grammar_rnd(self.player.max_vel)
+        # ln = LineCritic(song.y, l1.beat_frames, l1.spb)
+        # print(ln.critique(l1,self.player.max_vel))
 
+        # l1.generate_from_bpm(self.player.max_vel) #Generate Level
 
-        #l1.generate_from_bpm(self.player.max_vel) #Generate Level
-
-        self.camera = Camera(self.complex_camera, l1.width, self.total_level_height) #Initialise camera
+        self.camera = Camera(self.complex_camera, l1.width, self.total_level_height)  # Initialise camera
         P1 = self.player
         jump = False
         last_jump = []
@@ -204,20 +176,21 @@ class Game(pygame.sprite.LayeredUpdates):
         num_pts = 35
         old_pos_y = 0
 
-        playsound.playsound(song_name, False) #Start sound
+        # playsound.playsound(song_name, False) #Start sound
+        mixer.music.play()  # Play music
         start_time = 0
         jump_cnt = 0
         while not self.game_over:  # Game over check
-            cam_rect = self.camera.apply(P1.rect) #Move camera with player
-            start_time += 1/FPS #Increment timer
+            cam_rect = self.camera.apply(P1.rect)  # Move camera with player
+            start_time += 1 / FPS  # Increment timer
 
-            #Auto jump
-            if len(l1.beat_times) > jump_cnt and start_time >= l1.beat_times[jump_cnt]:
-                if l1.action_list[jump_cnt]:
-                    P1.jump(l1.boxes)
-                jump_cnt += 1
+            # Auto jump
+            # if len(l1.beat_times) > jump_cnt and start_time+(6/FPS) >= l1.beat_times[jump_cnt]:
+            #    if l1.action_list[jump_cnt]:
+            #        P1.jump(l1.boxes)
+            #   jump_cnt += 1
 
-            #Manual jump
+            # Manual jump
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
@@ -231,25 +204,24 @@ class Game(pygame.sprite.LayeredUpdates):
                         jump_adjust_y = 0
                         old_pos_y = self.camera.state.y
                         for i in range(0, num_pts):
-                            last_jump += [vec(cam_rect.centerx,cam_rect.bottom)+P1.sim_jump(i)]
+                            last_jump += [vec(cam_rect.centerx, cam_rect.bottom) + P1.sim_jump(i)]
                 if event.type == KEYUP:
                     if event.key == K_SPACE:
                         jump = False
 
             if jump:
                 jump_cnt += 1
-                P1.jump(l1.boxes)
+                P1.jump(l1.boxes_objects)
                 jump = False
 
-            old_pos_x = P1.pos.x #Change position
+            old_pos_x = P1.pos.x  # Change position
 
             # Update player without checking for collisions
             P1.move(l1.width)
 
-            self.game_over = P1.update(l1) #Update player and collisions
+            self.game_over = P1.update(l1)  # Update player and collisions
             if self.game_over:
-                self.explosion(P1, l1) #Animation
-
+                self.explosion(P1, l1)  # Animation
 
             # Update Camera
             self.camera.update(P1)
@@ -258,49 +230,71 @@ class Game(pygame.sprite.LayeredUpdates):
 
             # Draw updates screen
             self.screen.blit(self.gradient, pygame.Rect((0, 0, self.screen_width, self.screen_height)))
-            self.draw(l1.get_all_obstacles(P1.pos.x - self.screen_width, P1.pos.x + self.screen_width))
+            #Draw Platform
+            self.draw_platform(l1.get_platform())
+            self.draw2(l1.get_pieces_in_range(P1.pos.x - self.screen_width,P1.pos.x + self.screen_width))
+            #self.draw(l1.get_all_obstacles(P1.pos.x - self.screen_width, P1.pos.x + self.screen_width))
 
             # DRAW SCORE
             text = self.text_format("ATTEMPT " + str(P1.get_attempts()), font, 60, white)
             self.screen.blit(text, (40, 400))
 
-            #Simulate and draw jump/no_jump
-            #pts = []
-            #pts_no_jump = []
-            #alpha = 255
-            #for i in range(0,num_pts):
+            # Simulate and draw jump/no_jump
+            # pts = []
+            # pts_no_jump = []
+            # alpha = 255
+            # for i in range(0,num_pts):
             #   pts += [P1.sim_jump(i)]
             #   if i < 20:
             #       pts_no_jump += [P1.sim_no_jump(i)]
 
-            #for i in range(1,len(pts)):
+            # for i in range(1,len(pts)):
             #   alpha -= int(255/num_pts)
             #   self.aaline(self.screen, (0,255,0,alpha) , (cam_rect.centerx+pts[i-1].x,cam_rect.bottom+pts[i-1].y) ,  (cam_rect.centerx+pts[i].x,cam_rect.bottom+pts[i].y),10)
             #   if i < 20:
             #       self.aaline(self.screen, (255, 255, 0, alpha),(cam_rect.centerx + pts_no_jump[i - 1].x, cam_rect.bottom + pts_no_jump[i - 1].y),(cam_rect.centerx + pts_no_jump[i].x, cam_rect.bottom + pts_no_jump[i].y), 10)
-            #alpha = 255
-            #for i in range(1,len(last_jump)):
+            # alpha = 255
+            # for i in range(1,len(last_jump)):
             #    alpha -= int(255 / num_pts)
             #    self.aaline(self.screen, (255, 0, 0, alpha),
             #                (last_jump[i - 1].x-jump_adjust_x, last_jump[i - 1].y-jump_adjust_y),
             #                (last_jump[i].x-jump_adjust_x, last_jump[i].y-jump_adjust_y), 10)
 
-
-            P1.draw(self.screen, self.camera) #Draw player
-            pygame.display.update() # Update
+            P1.draw(self.screen, self.camera)  # Draw player
+            pygame.display.update()  # Update
             self.clock.tick(FPS)  # Increment clock
 
     def collision_correction(self, player, lvl):
         hit_left = player.update(lvl)  # Update with box collision
         # Spike collision
+        #print(lvl.get_all_spikes())
         hits_spike = pygame.sprite.spritecollide(player, lvl.get_all_spikes(), False, pygame.sprite.collide_mask)
-        if hits_spike or hit_left:
+        hits_lava = pygame.sprite.spritecollide(player, lvl.get_all_lava(), False, pygame.sprite.collide_mask)
+        if hits_spike or hits_lava or hit_left:
             self.game_over = True
             self.explosion(player, lvl)
 
     def draw(self, obstacles):
         for entity in obstacles:
             self.screen.blit(entity.surf, self.camera.apply(entity.rect))
+
+    def draw_platform(self,platform):
+        self.screen.blit(platform.surf, self.camera.apply(platform.rect))
+
+    def draw2(self, pieces):
+        for p in pieces:
+            #text = self.text_format(str(p.start_height)+" - "+str(p.end_height), font, 60, white)
+            #bx = Box((p.pos,150))
+            #self.screen.blit(text, self.camera.apply(bx.rect))
+            for b in p.boxes: #b is the position of the box
+                bx = Box(b)
+                self.screen.blit(bx.surf, self.camera.apply(bx.rect))
+            for s in p.spikes: #b is the position of the box
+                sp = Spike(s)
+                self.screen.blit(sp.surf, self.camera.apply(sp.rect))
+            for l in p.lava: #b is the position of the box
+                lv = Lava(l)
+                self.screen.blit(lv.surf, self.camera.apply(lv.rect))
 
     def mini_explosion(self, prtcles):
         if len(prtcles) > 0:
@@ -347,6 +341,147 @@ class Game(pygame.sprite.LayeredUpdates):
             pygame.display.update()
             self.clock.tick(FPS)
 
+    def generate_rhythm(self, song):
+        NO_ACTION = 0
+        JUMP = 1
+        al = []
+        for b in song.beat_times: #Generates actions for the times of the beats
+            if random.uniform(0,1) > random.uniform(0,1):
+                al += [NO_ACTION]
+            else:
+                al += [JUMP]
+        return al
+
+    def evolve_levels(self, player, song, critics, population_size, reproduction_size, mutation_rate, num_generations):
+        num_critics = len(critics)
+
+        al = self.generate_rhythm(song)
+
+
+        levels = []
+        for i in range(0, population_size):
+            levels += [Level(song, self.total_level_height, player, [], self.screen_height,al)]
+            levels[i].generate_geometry_from_grammar_rnd(player.max_vel)
+
+            print(str(i / population_size) + "%")
+            print("========")
+        print("FIRST GENERATION DONE")
+        print("++++++++++++++++++++++")
+        best_level = levels[0]
+        old_avg = 0
+        for g in range(0, num_generations):
+            print("+++++++++++++++++++++++++++++++++++")
+            print("GENERATION: "+str(g))
+            print("CRITIQUING LEVELS...")
+            lvl_scores = []
+            for lvl in levels:
+                lvl_scores += [0]
+                for c in critics:
+                    c.print()
+                    scr = c.critique(lvl)
+                    lvl_scores[-1] += scr
+                    #print(scr)
+            #print(lvl_scores)
+            avg = sum(lvl_scores)/len(lvl_scores)
+            print("AVERAGE SCORE: "+str(avg))
+            print("OLD AVERAGE: "+str(old_avg))
+            print("IMPROVED WITH: "+str(avg-old_avg))
+            old_avg = avg
+            print("+++++++++++++++++++++++++++++++++++")
+            print("CHOOSING BEST LEVELS...")
+
+            best_old_gen = []
+            new_levels = []
+            for i in range(0, reproduction_size):
+                best_idx = lvl_scores.index(max(lvl_scores))
+                lvl_scores.pop(best_idx)
+                best_old_gen += [levels.pop(best_idx)]  # add to next generation population
+                if i == 0:
+                    best_level = best_old_gen[-1]
+
+            # Mutation and crossover
+            for p in range(len(best_old_gen), population_size):
+                #Choose parents
+                parent1 = best_old_gen[random.randint(0, len(best_old_gen) - 1)]
+                parent2 = best_old_gen[random.randint(0, len(best_old_gen) - 1)]  # Choose second parent randomly from the best of the previous generation
+                while parent2 == parent1:  # Try again if its the same level
+                    parent2 = best_old_gen[random.randint(0, len(best_old_gen) - 1)]  # Choose second parent randomly
+
+                # Pick random spot to cut, one point crossover
+                cut_off = random.randint(0, len(parent1.get_pieces()))
+
+                parent_pieces1 = copy.deepcopy(parent1.get_pieces())
+                parent_pieces2 = copy.deepcopy(parent2.get_pieces())
+
+                if len(parent_pieces1) == 0 or len(parent_pieces2) == 0: #In case one parent is empty, return the other
+                    if len(parent_pieces1) == 0:
+                        new_levels += parent2
+                    else:
+                        new_levels += parent1
+                else:
+                    child1 = parent_pieces1[:cut_off] + parent_pieces2[cut_off:] #Crossover
+                    #child2 = parent_pieces2[:cut_off] + parent_pieces1[cut_off-1:-1]
+
+                    #Smooth out the new child, the cutoff can produce unfeasible results
+                    final1 = self.interpolate(parent1, child1)
+
+                    if random.uniform(0,1) < mutation_rate: #mutate individual
+                        mutation_id = random.randint(0,len(final1)-1)
+                        final1[mutation_id] = parent1.choose_level_piece(final1[mutation_id].pos, final1[mutation_id].start_height,
+                                                       final1[mutation_id].end_height) #Choose a random piece to replace it
+
+                    #Add child 1 to next population
+                    new_levels += [Level(parent1.song, parent1.height, player, final1, self.screen_height, al)]
+            new_levels.extend(best_old_gen) #Add best from previous generation and do it again
+            levels = new_levels
+        return best_level
+
+
+    def interpolate(self,lvl,pieces):
+        start_pieces = copy.deepcopy(pieces)
+        new_pieces = copy.deepcopy(pieces)
+        for i in range(1,len(new_pieces)):
+            height_diff = new_pieces[i-1].end_height-new_pieces[i].start_height #Calculate difference between pieces
+            if abs(height_diff) > 0: #If difference is 1 or less these pieces are legal
+                #need to interpolate/smoothe out the level, choose new piece to replace this one
+                if height_diff < 0: #Second piece is too high
+                    new_pieces[i] = lvl.choose_level_piece(new_pieces[i].pos, new_pieces[i - 1].end_height,
+                                                       new_pieces[i - 1].end_height + 1)
+                else: #Second piece too low
+                    new_pieces[i] = lvl.choose_level_piece(new_pieces[i].pos, new_pieces[i - 1].end_height,
+                                                       new_pieces[i - 1].end_height - 1)
+
+        #DEBUGGING STUFF :) DOESNT DO ANYTHING TO THE FINAL RESULT
+        #final_pieces = []
+        #height_map_new = []
+        #height_map_old = []
+        #different = False
+        #for i in range(0,len(new_pieces)):
+        #    #Generate replacement pieces
+        #    if i == 0:
+        #        final_pieces = [LevelPiece(new_pieces[i].pos,[],[],[],0,0)] #Enforce first piece flat
+        #    else:
+        #        final_pieces += [lvl.choose_level_piece(new_pieces[i].pos, final_pieces[i-1].end_height,
+        #                                               new_pieces[i].end_height)]
+        #    height_map_old += [(start_pieces[i].start_height,start_pieces[i].end_height)]
+        #    height_map_new += [(new_pieces[i].start_height, new_pieces[i].end_height)]
+        #    if start_pieces[i].start_height != new_pieces[i].start_height or start_pieces[i].end_height != new_pieces[i].end_height:
+        #        different = True
+
+        #print("+++++++++++++++++++++++++++++++++++++++")
+        #if different:
+        #    print("CHANGE IN PIECES LISTS")
+        #    print("OLD")
+        #    print(height_map_old)
+        #    print("NEW")
+        #    print(height_map_new)
+        #else:
+        #    print("NO CHANGE IN PIECES LISTS")
+        #    print("OLD")
+        #    print(height_map_old)
+        #print("+++++++++++++++++++++++++++++++++++++++")
+        return new_pieces
+
     def simple_camera(self, camera, target_rect):
         l, t, _, _ = target_rect  # l = left,  t = top
         _, _, w, h = camera  # w = width, h = height
@@ -369,7 +504,6 @@ class Game(pygame.sprite.LayeredUpdates):
     def text_format(self, message, textFont, textSize, textColor):
         newFont = pygame.font.Font(textFont, textSize)
         newText = newFont.render(message, True, textColor)
-
         return newText
 
     def vertical_gradient(self, size, startcolor, endcolor):
@@ -424,4 +558,3 @@ class Game(pygame.sprite.LayeredUpdates):
 
         pygame.gfxdraw.aapolygon(surface, (ul, ur, br, bl), color)
         pygame.gfxdraw.filled_polygon(surface, (ul, ur, br, bl), color)
-

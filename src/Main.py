@@ -104,10 +104,10 @@ class Main():
         ground_height = int(self.screen_height * 0.66)
 
         entities = pygame.sprite.Group()
-        #entities.add(Platform(vec(0, ground_height), self.screen_width))
+        entities.add(Platform(vec(0, ground_height), self.screen_width))
 
         start = False
-        lvl = Level(None, SCR_H, tmp_player, entities, pygame.sprite.Group(), self.screen_height*0.9)
+        lvl = Level(None, SCR_H, tmp_player, [], self.screen_height*0.9,[])
 
         explosion = False
         explosion_cnt = 40
@@ -270,7 +270,7 @@ class Main():
 main = Main()
 game = 1
 restart = True
-START_POS = (0,270)
+START_POS = (0,370)
 player = Player(START_POS)
 
 while True:

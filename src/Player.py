@@ -6,6 +6,8 @@ import sys
 import numpy as np
 import pygame
 
+from src.Platform import Platform
+
 vec = pygame.math.Vector2
 ACC = 0.35
 FRIC = -0.12
@@ -75,8 +77,9 @@ class Player(pygame.sprite.Sprite):
 
     def update(self, lvl):
         game_over = False
-        hits_spike = pygame.sprite.spritecollide(self, lvl.get_all_spikes(), False, pygame.sprite.collide_mask)
-        if hits_spike:
+        hits_spike = pygame.sprite.spritecollide(self, lvl.get_spikes(self.pos[0],self.pos[0]+BLOCK_SIZE*5), False, pygame.sprite.collide_mask)
+        hits_lava = pygame.sprite.spritecollide(self, lvl.get_lava(self.pos[0],self.pos[0]+BLOCK_SIZE*5), False, pygame.sprite.collide_mask)
+        if hits_spike or hits_lava:
             game_over = True
         collision_type = self.box_collision_check(lvl.get_all_boxes())
         if collision_type:
@@ -113,8 +116,8 @@ class Player(pygame.sprite.Sprite):
     def sim_jump_with_params(self, t, v, j_v, g):
         return (vec(v, j_v) * t) + 0.5 * vec(0, g) * (t * t)
 
-    def set_velocity(self, jump_time):
-        self.max_vel = (self.pixels_per_second / FPS)
+    def set_velocity(self, pps):
+        self.max_vel = (pps / FPS)
 
     def projectile_xy(self, t):
         '''
@@ -171,14 +174,14 @@ class Player(pygame.sprite.Sprite):
         new_rect = rotated_image.get_rect(center=image.get_rect(topleft=topleft).center)
         return rotated_image, new_rect
 
-    def parameter_tuning(self,error):
+    def parameter_tuning(self, error):
         max_g = 2
         min_g = 0.1
         increment = 0.01
 
         g_range = [min_g,max_g]
         g_costs = [10,10]
-        while (sum(g_costs)/2) > 2:
+        while (sum(g_costs)/2) > error:
             if g_costs[0] < g_costs[1]:
                 g_range = [g_range[0], g_range[1]-increment]
             elif g_costs[0] > g_costs[1]:
@@ -194,10 +197,11 @@ class Player(pygame.sprite.Sprite):
                 while pts[-1][1] < 0:
                     pts += [self.sim_jump_with_params(i, self.max_vel, JUMP_VEL, g_range[j])]
                     i += 1
-                #print(pts[-1][0]) #Distance from desired jump distance)
-                g_costs[j] = abs((pts[-1][0] - 5 * BLOCK_SIZE)) #Distance from desired jump distance
+
+                g_costs[j] = abs((pts[-1][0] - 5 * BLOCK_SIZE))#Distance from desired jump distance
 
 
         self.gravity = sum(g_range)/2
+
 
 

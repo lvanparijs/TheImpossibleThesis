@@ -10,4 +10,11 @@ class VarietyCritic(Critic):
         #Returns a score between 0-1 based on the particular critics scope
         # Returns a score between 0-1 based on the particular critics scope
         array1 = np.array(lvl.height_line)
-        return np.var(array1)  # sum Squared difference
+        array2 = np.array(lvl.height_line) #Theoretical max variance
+        array2[::2] = 2
+        array2[1::2] = 0
+        print(array2)
+        return (np.var(array1)/np.var(array2))  #variance relative to theoretical max, we want more variance so 1- is added
+
+    def print(self):
+        print("VARIETY CRITIC")

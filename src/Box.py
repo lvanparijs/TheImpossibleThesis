@@ -13,3 +13,8 @@ class Box(pygame.sprite.Sprite):
     def draw(self,surface):
         pygame.draw.rect(surface, (0, 0, 0), self.rect)
         pygame.draw.rect(surface, (255,255,255), self.rect,2)
+
+    def gen_temp_block(self,pos):
+        surf = pygame.image.load("res/block.png").convert_alpha()
+        rect = surf.get_rect(center=pos)
+        return rect

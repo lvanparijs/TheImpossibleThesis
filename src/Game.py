@@ -124,23 +124,26 @@ class Game(pygame.sprite.LayeredUpdates):
 
     # Game Loop
     def game_loop(self):
-        song_name = 'C:/Users/lvanp/PycharmProjects/TheImpossibleThesis/src/res/BeatShort.wav'  # Load song
+        song_path = 'C:/Users/lvanp/PycharmProjects/TheImpossibleThesis/src/res/'
+        song_title = 'BirdsLament'  # Load song
+        extension = '.wav'
+        song_name = song_path+song_title+extension
         mixer.music.load(song_name)
         self.screen.blit(self.gradient, pygame.Rect((0, 0, self.screen_width, self.screen_height)))  # Paint background
         self.player.attempts += 1  # Increment Attempts
 
         self.total_level_height = self.screen_height * 4  # Set Max level height
         song = Song(song_name)
+        filename = 'C:/Users/lvanp/PycharmProjects/TheImpossibleThesis/src/lvl/'+song_title+'.obj'
 
-        if not exists('C:/Users/lvanp/PycharmProjects/TheImpossibleThesis/src/lvl/TestLevel1.obj'):
+        if not exists(filename):
             num_levels = 10
             print("GENERATING CANDIDATE LEVELS...")
             critics = [LineCritic(), VarietyCritic(), ComponentFrequencyCritic(), EmptynessCritic()]
 
-            l1 = self.evolve_levels(self.player, song, critics, 100, 10, 0.05, 10) #GA
+            l1 = self.evolve_levels(self.player, song, critics, 100, 10, 0.05, 100) #GA
 
             print("SAVING LEVEL")
-            filename = 'C:/Users/lvanp/PycharmProjects/TheImpossibleThesis/src/lvl/TestLevel1.obj'
 
             # pickle.dump(l1.get_lvl_data(),filehandler)
             with open(filename, 'wb') as filehandler:
@@ -150,7 +153,7 @@ class Game(pygame.sprite.LayeredUpdates):
             filehandler.close()
 
         else:
-            with open('C:/Users/lvanp/PycharmProjects/TheImpossibleThesis/src/lvl/TestLevel1.obj', 'rb+') as f:
+            with open(filename, 'rb+') as f:
                 player_grav = pickle.load(f)
                 print(player_grav)
                 pieces = pickle.load(f)
@@ -160,12 +163,6 @@ class Game(pygame.sprite.LayeredUpdates):
                 self.player.gravity = player_grav
                 self.player.set_velocity(int((5 * BOX_SIZE) / song.spb))
                 l1 = Level(song, self.total_level_height, self.player, pieces, self.screen_height,[])
-        # l1.generate_geometry(self.player.max_vel)
-        # l1.generate_geometry_from_grammar_rnd(self.player.max_vel)
-        # ln = LineCritic(song.y, l1.beat_frames, l1.spb)
-        # print(ln.critique(l1,self.player.max_vel))
-
-        # l1.generate_from_bpm(self.player.max_vel) #Generate Level
 
         self.camera = Camera(self.complex_camera, l1.width, self.total_level_height)  # Initialise camera
         P1 = self.player
@@ -426,7 +423,7 @@ class Game(pygame.sprite.LayeredUpdates):
                     final1 = self.interpolate(parent1, child1)
 
                     if random.uniform(0,1) < mutation_rate: #mutate individual
-                        mutation_id = random.randint(0,len(final1)-1)
+                        mutation_id = random.randint(1,len(final1)-1)
                         final1[mutation_id] = parent1.choose_level_piece(final1[mutation_id].pos, final1[mutation_id].start_height,
                                                        final1[mutation_id].end_height) #Choose a random piece to replace it
 
@@ -440,7 +437,7 @@ class Game(pygame.sprite.LayeredUpdates):
     def interpolate(self,lvl,pieces):
         start_pieces = copy.deepcopy(pieces)
         new_pieces = copy.deepcopy(pieces)
-        for i in range(1,len(new_pieces)):
+        for i in range(0,len(new_pieces)):
             height_diff = new_pieces[i-1].end_height-new_pieces[i].start_height #Calculate difference between pieces
             if abs(height_diff) > 0: #If difference is 1 or less these pieces are legal
                 #need to interpolate/smoothe out the level, choose new piece to replace this one
@@ -451,6 +448,7 @@ class Game(pygame.sprite.LayeredUpdates):
                     new_pieces[i] = lvl.choose_level_piece(new_pieces[i].pos, new_pieces[i - 1].end_height,
                                                        new_pieces[i - 1].end_height - 1)
 
+        new_pieces[0] = LevelPiece(new_pieces[0].pos, [], [], [], 0, 0) #Enforce empty platform as first piece to give the player soe time to react
         #DEBUGGING STUFF :) DOESNT DO ANYTHING TO THE FINAL RESULT
         #final_pieces = []
         #height_map_new = []

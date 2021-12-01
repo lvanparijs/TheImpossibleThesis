@@ -1,5 +1,5 @@
 from random import randint
-from time import sleep
+import os
 
 import pygame
 
@@ -23,7 +23,7 @@ COLOUR_TEXT_INV = (0, 0, 0)
 vec = pygame.math.Vector2
 
 # Game Fonts
-font = "futureforces.ttf"
+font = "res/futureforces.ttf"
 
 
 # Text Renderer
@@ -79,6 +79,8 @@ class Main():
     def __init__(self):
         # Display variables
         pygame.init()  # Initialise display
+
+        self.chosen_level = ''
 
         (self.screen_width, self.screen_height) = (SCR_W, SCR_H)  # Set screen size
 
@@ -136,22 +138,46 @@ class Main():
         title2_rect = title2.get_rect()
         title3_rect = title3.get_rect()
 
+        selected_ind = 0
+        selected = ['level','tutorial','quit']
+
+        tutorial = False #Flag for whether or not to play the tutorial
+
+        lvl_ind = 0
+        lvls = self.get_all_levels()
+
+        prefix = 'lvl/'
+        suffix = '.obj'
+
+        sel_level_name = lvls[lvl_ind]
+        if prefix in sel_level_name:
+            sel_level_name = sel_level_name.replace(prefix, '')
+        if suffix in sel_level_name:
+            sel_level_name = sel_level_name.replace(suffix, '')
+        self.chosen_level = sel_level_name
+
         while not start:
             self.screen.blit(self.gradient, pygame.Rect((0, 0, self.screen_width, self.screen_height)))
 
             # Main Menu UI
-            if selected == "start":
-                text_start = text_format("START<", font, 80, COLOUR_TEXT)
+            if selected[selected_ind] == "level":
+                text_start = text_format("<"+sel_level_name+">", font, 80, COLOUR_TEXT)
             else:
-                text_start = text_format("START", font, 80, COLOUR_TEXT_INV)
-            if selected == "quit":
-                text_quit = text_format("QUIT<", font, 80, COLOUR_TEXT)
+                text_start = text_format(sel_level_name, font, 80, COLOUR_TEXT_INV)
+            if selected[selected_ind] == "quit":
+                text_quit = text_format("<QUIT>", font, 80, COLOUR_TEXT)
             else:
                 text_quit = text_format("QUIT", font, 80, COLOUR_TEXT_INV)
             explanation = text_format("UP/DOWN = CHOOSE \t \t SELECT = ENTER", font, 30,
                                       COLOUR_TEXT)
+            if selected[selected_ind] == "tutorial":
+                text_tutorial = text_format("<TUTORIAL>", font, 80, COLOUR_TEXT)
+            else:
+                text_tutorial = text_format("TUTORIAL", font, 80, COLOUR_TEXT_INV)
+
             start_rect = text_start.get_rect()
             quit_rect = text_quit.get_rect()
+            tutorial_rect = text_tutorial.get_rect()
             expl_rect = explanation.get_rect()
 
             if t1_alpha >= t1_hi:
@@ -183,8 +209,9 @@ class Main():
 
             self.screen.blit(title1, (20, 20))
             self.screen.blit(title3, (355, 140))
-            self.screen.blit(text_start, (self.screen_width / 2 - (start_rect[2] / 2), 265))
-            self.screen.blit(text_quit, (self.screen_width / 2 - (quit_rect[2] / 2), 335))
+            self.screen.blit(text_start, (self.screen_width / 2 - (start_rect[2] / 2), 260))
+            self.screen.blit(text_tutorial, (self.screen_width / 2 - (tutorial_rect[2] / 2), 330))
+            self.screen.blit(text_quit, (self.screen_width / 2 - (quit_rect[2] / 2), 400))
 
             tmp_player.draw(self.screen, self.camera)
             self.screen.blit(title2, (self.screen_width / 2 - (title2_rect[2] / 2), 80))
@@ -208,23 +235,48 @@ class Main():
             tmp_player.move(lvl.width)
             tmp_player.update(lvl)
 
+
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     quit()
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_UP:
-                        selected = "start"
+                        selected_ind -= 1
+                        selected_ind = max(0,selected_ind)
                     elif event.key == pygame.K_DOWN:
-                        selected = "quit"
+                        selected_ind += 1
+                        selected_ind = min(len(selected)-1, selected_ind)
+                    print(selected[selected_ind])
                     if event.key == pygame.K_RETURN:
-                        if selected == "start":
+                        if selected[selected_ind] == "level":
                             start = True
                             self.explosion(tmp_player, lvl)
                             print("Start")
-                        if selected == "quit":
+                        if selected[selected_ind] == "quit":
                             pygame.quit()
                             quit()
+                    if event.key == pygame.K_LEFT and selected[selected_ind] == "level":
+                        lvl_ind -= 1
+                        lvl_ind = max(0,lvl_ind)
+                        sel_level_name = lvls[lvl_ind]
+                        if prefix in sel_level_name:
+                            sel_level_name = sel_level_name.replace(prefix, '')
+                        if suffix in sel_level_name:
+                            sel_level_name = sel_level_name.replace(suffix, '')
+                        self.chosen_level = sel_level_name
+                    elif event.key == pygame.K_RIGHT and selected[selected_ind] == "level":
+                        lvl_ind += 1
+                        lvl_ind = min(len(lvls)-1, lvl_ind)
+                        sel_level_name = lvls[lvl_ind]
+                        if prefix in sel_level_name:
+                            sel_level_name = sel_level_name.replace(prefix, '')
+                        if suffix in sel_level_name:
+                            sel_level_name = sel_level_name.replace(suffix, '')
+                        self.chosen_level = sel_level_name
+
+
+
         self.screen.blit(self.gradient, pygame.Rect((0, 0, self.screen_width, self.screen_height)))
         pygame.display.update()
 
@@ -250,11 +302,9 @@ class Main():
         while len(particles) > 0:  # Run until all particles faded
 
             self.screen.blit(self.gradient, pygame.Rect((0, 0, self.screen_width, self.screen_height)))
-            # self.screen.fill(BG_COLOUR) #Fill screen
             obs = lvl.get_all_obstacles(self.camera.state.topleft[0],self.camera.state.topright[0])
             for entity in obs:
                 self.screen.blit(entity.surf, self.camera.apply(entity.rect))
-            # self.draw() #Draw obstacles
             for p in particles:  # Particle check
                 if p.get_alpha() <= 0:
                     particles.remove(p)
@@ -266,11 +316,22 @@ class Main():
         self.screen.blit(self.gradient, pygame.Rect((0, 0, self.screen_width, self.screen_height)))
         pygame.display.update()
 
+    def get_all_levels(self):
+        path = r'C:\Users\Administrator.SHAREPOINTSKY\Desktop\Work'
+        path = 'lvl/'
+        list_of_files = []
+
+        for root, dirs, files in os.walk(path):
+            for file in files:
+                list_of_files.append(os.path.join(root, file))
+        for name in list_of_files:
+            print(name)
+        return list_of_files
 
 main = Main()
 game = 1
 restart = True
-START_POS = (0,370)
+START_POS = (40,370)
 player = Player(START_POS)
 
 while True:
@@ -278,8 +339,11 @@ while True:
         main = Main()
         restart = True
     else:
+        main.get_all_levels()
         player.reset(START_POS)
-        game = Game(player, main.screen, SCR_W, SCR_H)
+        print(main.chosen_level)
+        game = Game(main.chosen_level,player, main.screen, SCR_W, SCR_H)
         restart = game.restart
         game = None
+
 

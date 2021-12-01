@@ -1,7 +1,5 @@
 import pygame
 
-from src.Entity import Entity
-
 class Lava(pygame.sprite.Sprite):
 
     def __init__(self, pos):

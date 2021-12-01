@@ -79,6 +79,9 @@ class Player(pygame.sprite.Sprite):
         game_over = False
         hits_spike = pygame.sprite.spritecollide(self, lvl.get_spikes(self.pos[0],self.pos[0]+BLOCK_SIZE*5), False, pygame.sprite.collide_mask)
         hits_lava = pygame.sprite.spritecollide(self, lvl.get_lava(self.pos[0],self.pos[0]+BLOCK_SIZE*5), False, pygame.sprite.collide_mask)
+
+        if self.pos[0] >= lvl.finish_flag[0]:
+            game_over = True
         if hits_spike or hits_lava:
             game_over = True
         collision_type = self.box_collision_check(lvl.get_all_boxes())

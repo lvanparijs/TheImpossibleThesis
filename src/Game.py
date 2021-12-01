@@ -2,6 +2,7 @@ import copy
 import math
 import random
 import sys
+import time
 
 from math import cos
 import numpy as np
@@ -54,12 +55,12 @@ green = (0, 255, 0)
 blue = (0, 0, 255)
 yellow = (255, 255, 0)
 
-font = "futureforces.ttf"
+font = "res/futureforces.ttf"
 
 
 class Game(pygame.sprite.LayeredUpdates):
 
-    def __init__(self, player, scr, scr_w, scr_h):
+    def __init__(self, song_name, player, scr, scr_w, scr_h):
         # Display variables
         self.screen = scr
         self.screen_width = scr_w
@@ -78,6 +79,7 @@ class Game(pygame.sprite.LayeredUpdates):
         pygame.display.flip()
 
         self.player = player
+        self.song_name = song_name
         self.level = None
 
         scr.blit(self.gradient, pygame.Rect((0, 0, scr_w, scr_h)))
@@ -124,8 +126,8 @@ class Game(pygame.sprite.LayeredUpdates):
 
     # Game Loop
     def game_loop(self):
-        song_path = 'C:/Users/lvanp/PycharmProjects/TheImpossibleThesis/src/res/'
-        song_title = 'BirdsLament'  # Load song
+        song_path = "res/"
+        song_title = self.song_name # Load song
         extension = '.wav'
         song_name = song_path+song_title+extension
         mixer.music.load(song_name)
@@ -133,31 +135,33 @@ class Game(pygame.sprite.LayeredUpdates):
         self.player.attempts += 1  # Increment Attempts
 
         self.total_level_height = self.screen_height * 4  # Set Max level height
-        song = Song(song_name)
-        filename = 'C:/Users/lvanp/PycharmProjects/TheImpossibleThesis/src/lvl/'+song_title+'.obj'
+        print("LOADING SONG")
+        song = Song(song_name,False)
+        lvl_path = "lvl/"
+        filename = lvl_path+song_title+'.obj'
 
         if not exists(filename):
             num_levels = 10
+            song = Song(song_name, True)
             print("GENERATING CANDIDATE LEVELS...")
             critics = [LineCritic(), VarietyCritic(), ComponentFrequencyCritic(), EmptynessCritic()]
 
             l1 = self.evolve_levels(self.player, song, critics, 100, 10, 0.05, 100) #GA
 
-            print("SAVING LEVEL")
+            print("SAVING LEVEL...")
 
-            # pickle.dump(l1.get_lvl_data(),filehandler)
             with open(filename, 'wb') as filehandler:
-                pickle.dump(self.player.gravity, filehandler)
-                pickle.dump(l1.pieces, filehandler)
+                pickle.dump(l1.song.file_name,filehandler)
+                pickle.dump(self.player.gravity, filehandler) #Save gravity to recreate environment
+                pickle.dump(l1.pieces, filehandler) #save all the level pieces
 
             filehandler.close()
 
         else:
             with open(filename, 'rb+') as f:
+                s_name = pickle.load(f)
                 player_grav = pickle.load(f)
-                print(player_grav)
                 pieces = pickle.load(f)
-                print(pieces)
                 f.close()
 
                 self.player.gravity = player_grav
@@ -173,19 +177,13 @@ class Game(pygame.sprite.LayeredUpdates):
         num_pts = 35
         old_pos_y = 0
 
-        # playsound.playsound(song_name, False) #Start sound
-        mixer.music.play()  # Play music
+
         start_time = 0
-        jump_cnt = 0
+        countdown = True
+        music_on = False
         while not self.game_over:  # Game over check
             cam_rect = self.camera.apply(P1.rect)  # Move camera with player
             start_time += 1 / FPS  # Increment timer
-
-            # Auto jump
-            # if len(l1.beat_times) > jump_cnt and start_time+(6/FPS) >= l1.beat_times[jump_cnt]:
-            #    if l1.action_list[jump_cnt]:
-            #        P1.jump(l1.boxes)
-            #   jump_cnt += 1
 
             # Manual jump
             for event in pygame.event.get():
@@ -207,7 +205,6 @@ class Game(pygame.sprite.LayeredUpdates):
                         jump = False
 
             if jump:
-                jump_cnt += 1
                 P1.jump(l1.boxes_objects)
                 jump = False
 
@@ -227,62 +224,38 @@ class Game(pygame.sprite.LayeredUpdates):
 
             # Draw updates screen
             self.screen.blit(self.gradient, pygame.Rect((0, 0, self.screen_width, self.screen_height)))
-            #Draw Platform
+
+            #Draw Platform, finish and pieces
             self.draw_platform(l1.get_platform())
-            self.draw2(l1.get_pieces_in_range(P1.pos.x - self.screen_width,P1.pos.x + self.screen_width))
-            #self.draw(l1.get_all_obstacles(P1.pos.x - self.screen_width, P1.pos.x + self.screen_width))
+            self.draw_finish_flag(l1.finish_flag)
+            self.draw(l1.get_pieces_in_range(P1.pos.x - self.screen_width,P1.pos.x + self.screen_width))
 
             # DRAW SCORE
-            text = self.text_format("ATTEMPT " + str(P1.get_attempts()), font, 60, white)
-            self.screen.blit(text, (40, 400))
-
-            # Simulate and draw jump/no_jump
-            # pts = []
-            # pts_no_jump = []
-            # alpha = 255
-            # for i in range(0,num_pts):
-            #   pts += [P1.sim_jump(i)]
-            #   if i < 20:
-            #       pts_no_jump += [P1.sim_no_jump(i)]
-
-            # for i in range(1,len(pts)):
-            #   alpha -= int(255/num_pts)
-            #   self.aaline(self.screen, (0,255,0,alpha) , (cam_rect.centerx+pts[i-1].x,cam_rect.bottom+pts[i-1].y) ,  (cam_rect.centerx+pts[i].x,cam_rect.bottom+pts[i].y),10)
-            #   if i < 20:
-            #       self.aaline(self.screen, (255, 255, 0, alpha),(cam_rect.centerx + pts_no_jump[i - 1].x, cam_rect.bottom + pts_no_jump[i - 1].y),(cam_rect.centerx + pts_no_jump[i].x, cam_rect.bottom + pts_no_jump[i].y), 10)
-            # alpha = 255
-            # for i in range(1,len(last_jump)):
-            #    alpha -= int(255 / num_pts)
-            #    self.aaline(self.screen, (255, 0, 0, alpha),
-            #                (last_jump[i - 1].x-jump_adjust_x, last_jump[i - 1].y-jump_adjust_y),
-            #                (last_jump[i].x-jump_adjust_x, last_jump[i].y-jump_adjust_y), 10)
+            if not countdown:
+                text = self.text_format("ATTEMPT " + str(P1.get_attempts()), font, 60, white)
+                self.screen.blit(text, (40, 400))
 
             P1.draw(self.screen, self.camera)  # Draw player
             pygame.display.update()  # Update
             self.clock.tick(FPS)  # Increment clock
 
-    def collision_correction(self, player, lvl):
-        hit_left = player.update(lvl)  # Update with box collision
-        # Spike collision
-        #print(lvl.get_all_spikes())
-        hits_spike = pygame.sprite.spritecollide(player, lvl.get_all_spikes(), False, pygame.sprite.collide_mask)
-        hits_lava = pygame.sprite.spritecollide(player, lvl.get_all_lava(), False, pygame.sprite.collide_mask)
-        if hits_spike or hits_lava or hit_left:
-            self.game_over = True
-            self.explosion(player, lvl)
-
-    def draw(self, obstacles):
-        for entity in obstacles:
-            self.screen.blit(entity.surf, self.camera.apply(entity.rect))
+            if countdown:
+                playsound.playsound('res/countdown.wav')
+                countdown = False
+            elif not music_on:
+                mixer.music.play()  # Play music
+                music_on = True
 
     def draw_platform(self,platform):
         self.screen.blit(platform.surf, self.camera.apply(platform.rect))
 
-    def draw2(self, pieces):
+    def draw_finish_flag(self,pos):
+        surf = pygame.image.load("res/flag.png").convert_alpha()  # Get sprite for player
+        rect = surf.get_rect(bottomleft=pos)
+        self.screen.blit(surf,self.camera.apply(rect))
+
+    def draw(self, pieces):
         for p in pieces:
-            #text = self.text_format(str(p.start_height)+" - "+str(p.end_height), font, 60, white)
-            #bx = Box((p.pos,150))
-            #self.screen.blit(text, self.camera.apply(bx.rect))
             for b in p.boxes: #b is the position of the box
                 bx = Box(b)
                 self.screen.blit(bx.surf, self.camera.apply(bx.rect))
@@ -319,8 +292,8 @@ class Game(pygame.sprite.LayeredUpdates):
 
             self.screen.blit(self.gradient, pygame.Rect((0, 0, self.screen_width, self.screen_height)))
 
-            self.draw(
-                lvl.get_all_obstacles(self.camera.state.topleft[0], self.camera.state.topright[0]))  # Draw obstacles
+            self.draw_platform(lvl.get_platform())
+            self.draw(lvl.get_pieces_in_range(self.camera.state.topleft[0], self.camera.state.topright[0]))
             circle_size += 2
             circle = pygame.Surface((circle_size * 2, circle_size * 2), pygame.SRCALPHA)
             circle_alpha -= 5
@@ -350,19 +323,13 @@ class Game(pygame.sprite.LayeredUpdates):
         return al
 
     def evolve_levels(self, player, song, critics, population_size, reproduction_size, mutation_rate, num_generations):
-        num_critics = len(critics)
-
-        al = self.generate_rhythm(song)
-
+        al = self.generate_rhythm(song) #Generate Rhythm for all the levels
 
         levels = []
-        for i in range(0, population_size):
+        for i in range(0, population_size): #Generate initial population
             levels += [Level(song, self.total_level_height, player, [], self.screen_height,al)]
             levels[i].generate_geometry_from_grammar_rnd(player.max_vel)
 
-            print(str(i / population_size) + "%")
-            print("========")
-        print("FIRST GENERATION DONE")
         print("++++++++++++++++++++++")
         best_level = levels[0]
         old_avg = 0
@@ -377,8 +344,6 @@ class Game(pygame.sprite.LayeredUpdates):
                     c.print()
                     scr = c.critique(lvl)
                     lvl_scores[-1] += scr
-                    #print(scr)
-            #print(lvl_scores)
             avg = sum(lvl_scores)/len(lvl_scores)
             print("AVERAGE SCORE: "+str(avg))
             print("OLD AVERAGE: "+str(old_avg))

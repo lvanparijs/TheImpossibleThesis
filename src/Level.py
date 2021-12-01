@@ -8,8 +8,6 @@ from src.LevelPiece import LevelPiece
 from src.Platform import Platform
 from src.Spike import Spike
 
-from pyAudioAnalysis import audioTrainTest as att
-
 vec = pygame.math.Vector2
 BOX_SIZE = 40
 JUMP = 1
@@ -30,9 +28,7 @@ class Level:
             self.action_list = action_list  # Initialise list of Actions
             self.height_line = []  # Level height line, used for Critic
 
-
             self.width = song.song_duration * player.max_vel * 60  # Width of the level in pixels, determined by length of song, speed of player
-
 
             if len(lvl_pieces) == 0: #No content yet, get genre for generating afterwards
                 # Set player parameters
@@ -55,7 +51,6 @@ class Level:
         self.lava = list()
 
         for p in self.pieces:
-            #print(p)
             self.boxes += p.get_all_boxes()[:]
             self.spikes += p.get_all_spikes()[:]
             self.lava += p.get_all_lava()[:]
@@ -80,6 +75,7 @@ class Level:
         self.ground_level = int(screen_height * 0.9)#Ground level
         self.platform = Platform(vec(0, self.ground_level),self.width) #Main platform of the level
         self.boxes_objects.add(self.platform)
+        self.finish_flag = (self.width - 300, self.ground_level+35) #Positioning finish flag
 
     def choose_level_piece(self,pos, start_height,end_height):
         bxes = []
@@ -91,9 +87,6 @@ class Level:
             else:
                 bxes,spks,lva = self.fall_down(pos, start_height)
         elif start_height < end_height:
-            #if end_height-2 == start_height:#2 Block jump
-            #    bxes,spks,lva = self.jump_up_2(pos,start_height) #Keep same piece
-            #else: #jump up 1
             bxes,spks,lva = self.jump_up_1(pos,start_height)
         else: #Equal height, so pick flat piece
             if start_height <= 0: #On ground
@@ -116,8 +109,6 @@ class Level:
                     bxes,spks,lva = self.flat_blocks_spike_2(pos,start_height)
                 else:
                     bxes,spks,lva = self.flat_blocks_spike_3(pos,start_height)
-                #                elif choose == 2:
-                #    bxes,spks,lva = self.flat_jump_lava(pos,start_height)
         return LevelPiece(pos,bxes,spks,lva,start_height,end_height)
 
 
@@ -128,7 +119,7 @@ class Level:
         selected = []
         for p in self.pieces:
             pos = p.pos
-            if pos >= start_x and pos <= end_x: #Set bounds for selection
+            if start_x <= pos <= end_x: #Set bounds for selection
                 selected += [p]
         return selected
 
@@ -139,7 +130,6 @@ class Level:
         return self.boxes,self.spikes
 
     def get_height_line(self):
-        #for a in self.action_list:
         height_line = list()
         for p in self.pieces:
             height_line += [p.end_height]
@@ -147,7 +137,6 @@ class Level:
 
     def generate_geometry_from_grammar_rnd(self,vel):
         print("GENERATING GEOMETRY...")
-
         obstacle_pos = self.song.beat_times * vel * 60 #Initialise the beginning of each level piece
         height_cnt = 0 #Floor == 0
         self.height_line += [height_cnt]
@@ -160,15 +149,6 @@ class Level:
                     bxs, spk, lva = self.jump_up_1(obstacle_pos[i], height_cnt)
                     self.pieces += [LevelPiece(obstacle_pos[i], bxs, spk, lva, height_cnt, height_cnt + 1)]
                     height_cnt += 1
-                    #rnd_threshold = random.uniform(0, 1) #Randomly pick between jumping up 1 or 2 blocks
-                    #if random.uniform(0, 1) > rnd_threshold:
-                    #    bxs,spk,lva = self.jump_up_1(obstacle_pos[i], height_cnt)
-                    #    self.pieces += [LevelPiece(obstacle_pos[i], bxs, spk, lva, height_cnt, height_cnt + 1)]
-                    #    height_cnt += 1
-                    #else:
-                    #    bxs,spk,lva = self.jump_up_2(obstacle_pos[i], height_cnt)
-                    #    self.pieces += [LevelPiece(obstacle_pos[i], bxs, spk, lva, height_cnt, height_cnt + 2)]
-                    #    height_cnt += 2
                 elif rnd_direction > 0.33: #FLAT
                     if height_cnt > 0: #off the floor
                         rnd_threshold = random.uniform(0,1)
@@ -238,10 +218,6 @@ class Level:
             height_cnt = min(self.max_height,height_cnt) #Make sure the height doesnt go beyond the height limit
             self.height_line += [height_cnt]
         self.height_line = self.get_height_line()
-        #print("SAME LENGTH HEIGHT LINE AND PIECES LIST")
-        #print(len(self.pieces) == len(self.height_line))
-        #print(len(self.pieces))
-        #print(len(self.height_line))
 
     def empty_platform(self):
         return
@@ -252,9 +228,6 @@ class Level:
         lva = []
         spks.append(Spike((pos + BOX_SIZE,
                        self.ground_level - BOX_SIZE / 2 + 2 - BOX_SIZE * height)))
-        self.spikes_objects.add(Spike((pos + BOX_SIZE,
-                       self.ground_level - BOX_SIZE / 2 + 2 - BOX_SIZE * height)))
-        #self.pieces += [LevelPiece(bxes, spks, lva,height,height)]
         return bxes, spks, lva
 
     def spikes_flat_2(self,pos,height):
@@ -263,11 +236,6 @@ class Level:
                                self.ground_level - BOX_SIZE / 2 + 2 - BOX_SIZE * height)),Spike((pos + BOX_SIZE*2,
                                self.ground_level - BOX_SIZE / 2 + 2 - BOX_SIZE * height))]
         lva = []
-        #self.pieces += [LevelPiece(obstacle_pos[i], bxes, spks, lva,height,height)]
-        self.spikes_objects.add(Spike((pos + BOX_SIZE,
-                               self.ground_level - BOX_SIZE / 2 + 2 - BOX_SIZE * height)))
-        self.spikes_objects.add(Spike((pos + BOX_SIZE + BOX_SIZE,
-                               self.ground_level - BOX_SIZE / 2 + 2 - BOX_SIZE * height)))
         return bxes, spks, lva
 
     def spikes_flat_3(self,pos,height):
@@ -277,13 +245,6 @@ class Level:
                                self.ground_level - BOX_SIZE / 2 + 2 - BOX_SIZE * height)),Spike((pos + BOX_SIZE*3,
                                self.ground_level - BOX_SIZE / 2 + 2 - BOX_SIZE * height))]
         lva = []
-        #self.pieces += [LevelPiece(bxes, spks, lva,height,height)]
-        self.spikes_objects.add(Spike((pos + BOX_SIZE,
-                               self.ground_level - BOX_SIZE / 2 + 2 - BOX_SIZE * height)))
-        self.spikes_objects.add(Spike((pos + BOX_SIZE*2,
-                               self.ground_level - BOX_SIZE / 2 + 2 - BOX_SIZE * height)))
-        self.spikes_objects.add(Spike((pos + BOX_SIZE*3,
-                               self.ground_level - BOX_SIZE / 2 + 2 - BOX_SIZE * height)))
         return bxes, spks, lva
 
     def fall_down(self,pos,height):
@@ -295,21 +256,9 @@ class Level:
         if height > 1:
             for j in range(0, 5):
                 lva.append(Lava((pos + BOX_SIZE * j, self.ground_level)))
-                self.lava_objects.add(Lava((pos + BOX_SIZE * j, self.ground_level)))
         elif height > 0:
             for j in range(0, 3):
                 lva.append(Lava((pos + BOX_SIZE * j, self.ground_level)))
-                self.lava_objects.add(Lava((pos + BOX_SIZE * j, self.ground_level)))
-        #self.pieces += [LevelPiece(bxes, spks, lva,height,height-1)]
-        self.boxes_objects.add(Box(
-            (pos, self.ground_level - BOX_SIZE / 2 - BOX_SIZE * height)))
-
-        self.boxes_objects.add(
-            Box((pos + BOX_SIZE * 4,
-                 self.ground_level - BOX_SIZE / 2 - BOX_SIZE * (height-1))))
-        self.boxes_objects.add(
-            Box((pos + BOX_SIZE * 3,
-                 self.ground_level - BOX_SIZE / 2 - BOX_SIZE * (height-1))))
         return bxes, spks, lva
 
     def jump_down(self,pos,height):
@@ -318,26 +267,16 @@ class Level:
         lva = []
         if height > 0: #Off the floor
             bxes.append(Box((pos, self.ground_level - BOX_SIZE / 2 - BOX_SIZE * height)))
-            self.boxes_objects.add(
-                Box((pos, self.ground_level - BOX_SIZE / 2 - BOX_SIZE * height)))
             if height == 1:
                 for j in range(0, 4):
                     lva.append(Lava((pos + BOX_SIZE * j, self.ground_level)))
-                    self.lava_objects.add(Lava((pos + BOX_SIZE * j, self.ground_level)))
             else:
                 for j in range(0, 5):
                     lva.append(Lava((pos + BOX_SIZE * j, self.ground_level)))
-                    self.lava_objects.add(Lava((pos + BOX_SIZE * j, self.ground_level)))
-            #height -= 1
             bxes.append(Box(
-                (pos + BOX_SIZE * 4, self.ground_level - BOX_SIZE / 2 - BOX_SIZE * (height-1))))
-            self.boxes_objects.add(Box(
                 (pos + BOX_SIZE * 4, self.ground_level - BOX_SIZE / 2 - BOX_SIZE * (height-1))))
         else: #One above floor, jump down to floor
             bxes.append(Box((pos, self.ground_level - BOX_SIZE / 2 - BOX_SIZE * height)))
-            self.boxes_objects.add(
-                Box((pos, self.ground_level - BOX_SIZE / 2 - BOX_SIZE * height)))
-        #self.pieces += [LevelPiece(bxes, spks, lva,height,height-1)]
         return bxes, spks, lva
 
     def jump_up_1(self,pos,height):
@@ -348,26 +287,12 @@ class Level:
             bxes = [Box((pos, self.ground_level - BOX_SIZE / 2 - BOX_SIZE * height)),Box((pos + BOX_SIZE * 4,
                      self.ground_level - BOX_SIZE / 2 - BOX_SIZE * (height + 1)))]
             lva = [Lava((pos + BOX_SIZE * 0, self.ground_level)),Lava((pos + BOX_SIZE * 1, self.ground_level)),Lava((pos + BOX_SIZE * 2, self.ground_level)),Lava((pos + BOX_SIZE * 3, self.ground_level)),Lava((pos + BOX_SIZE * 4, self.ground_level))]
-            self.boxes_objects.add(
-                Box((pos, self.ground_level - BOX_SIZE / 2 - BOX_SIZE * height)))
-
-            for j in range(0, 5):
-                self.lava_objects.add(Lava((pos + BOX_SIZE * j, self.ground_level)))
-
-            self.boxes_objects.add(
-                Box((pos + BOX_SIZE * 4,
-                     self.ground_level - BOX_SIZE / 2 - BOX_SIZE * (height + 1))))
         else:
             bxes = [Box((pos + BOX_SIZE * 4, self.ground_level - BOX_SIZE / 2 - BOX_SIZE))]
             lva = [Lava((pos + BOX_SIZE * 4, self.ground_level))]
             spks = [Spike((pos + BOX_SIZE*2,
                                self.ground_level - BOX_SIZE / 2 + 2 - BOX_SIZE * height)),Spike((pos + BOX_SIZE*3,
                                self.ground_level - BOX_SIZE / 2 + 2 - BOX_SIZE * height))]
-            self.boxes_objects.add(
-                Box((pos + BOX_SIZE * 4, self.ground_level - BOX_SIZE / 2 - BOX_SIZE)))
-            self.lava_objects.add(Lava((pos + BOX_SIZE * 4, self.ground_level)))
-            self.spikes_flat_3(pos, height)
-        # self.pieces += [LevelPiece(bxes,spks,lva,height,height+1)]
         return bxes,spks,lva
 
 
@@ -377,12 +302,9 @@ class Level:
         lva = []
         if height > 0: #Off the floor
             bxes.append(Box((pos, self.ground_level - BOX_SIZE / 2 - BOX_SIZE * height)))
-            self.boxes_objects.add(
-                Box((pos, self.ground_level - BOX_SIZE / 2 - BOX_SIZE * height)))
 
             for j in range(0, 5):
                 lva.append(Lava((pos + BOX_SIZE * j, self.ground_level)))
-                self.lava_objects.add(Lava((pos + BOX_SIZE * j, self.ground_level)))
 
             bxes.append(
                 Box((pos + BOX_SIZE * 4,
@@ -390,13 +312,6 @@ class Level:
             bxes.append(
                 Box((pos + BOX_SIZE * 3,
                      self.ground_level - BOX_SIZE / 2 - BOX_SIZE * height - BOX_SIZE * 2)))
-
-            self.boxes_objects.add(
-                Box((pos + BOX_SIZE * 4,
-                     self.ground_level - BOX_SIZE / 2 - BOX_SIZE * height - BOX_SIZE*2)))
-            self.boxes_objects.add(
-                Box((pos + BOX_SIZE * 3,
-                     self.ground_level - BOX_SIZE / 2 - BOX_SIZE * height - BOX_SIZE*2)))
         else:
             bxes.append(Box((pos + BOX_SIZE * 4,
                      self.ground_level - BOX_SIZE / 2 - BOX_SIZE * 2)))
@@ -406,13 +321,8 @@ class Level:
                                                                                               self.ground_level - BOX_SIZE / 2 + 2 - BOX_SIZE * height)),
                     Spike((pos + BOX_SIZE * 3,
                            self.ground_level - BOX_SIZE / 2 + 2 - BOX_SIZE * height))]
-            self.boxes_objects.add(
-                Box((pos + BOX_SIZE * 4,
-                     self.ground_level - BOX_SIZE / 2 - BOX_SIZE * 2)))
-            self.lava_objects.add(Lava((pos + BOX_SIZE * 4, self.ground_level)))
 
             self.spikes_flat_3(pos,height)
-        #self.pieces += [LevelPiece(bxes, spks, lva,height,height+2)]
         return bxes, spks, lva
 
     def flat_blocks(self,pos,height):
@@ -422,14 +332,10 @@ class Level:
         for i in range(0,5):
             bxes.append(Box((pos + BOX_SIZE * i,
                             self.ground_level - BOX_SIZE / 2 - BOX_SIZE * height)))
-            self.boxes_objects.add(Box((pos + BOX_SIZE * i,
-                            self.ground_level - BOX_SIZE / 2 - BOX_SIZE * height)))
 
         if height > 0:
             for j in range(0, 5):
                 lva.append(Lava((pos + BOX_SIZE * j, self.ground_level)))
-                self.lava_objects.add(Lava((pos + BOX_SIZE * j, self.ground_level)))
-        #self.pieces += [LevelPiece(bxes, spks, lva,height,height)]
         return bxes,spks,lva
 
     def flat_blocks_spike_1(self,pos,height):
@@ -440,66 +346,46 @@ class Level:
             for j in range(0, 5):
                 bxes.append(Box((pos + BOX_SIZE * j,
                                     self.ground_level - BOX_SIZE / 2 - BOX_SIZE * height)))
-                self.boxes_objects.add(Box((pos + BOX_SIZE * j,
-                                 self.ground_level - BOX_SIZE / 2 - BOX_SIZE * height)))
             if height >= 1:
                 for j in range(0, 5):
                     lva.append(Lava((pos + BOX_SIZE * j, self.ground_level)))
-                    self.lava_objects.add(Lava((pos + BOX_SIZE * j, self.ground_level)))
 
         spks.append(Spike((pos + BOX_SIZE + BOX_SIZE,
                    self.ground_level - BOX_SIZE - BOX_SIZE / 2 + 2 - BOX_SIZE * height)))
-        self.spikes_objects.add(
-            Spike((pos + BOX_SIZE + BOX_SIZE,
-                   self.ground_level - BOX_SIZE - BOX_SIZE / 2 + 2 - BOX_SIZE * height)))
-        #self.pieces += [LevelPiece(bxes, spks, lva,height,height)]
         return bxes, spks, lva
 
     def flat_blocks_spike_2(self,pos,height):
         bxes = []
         spks = []
         lva = []
-        #print(height)
+
         if height > 0: #Off the floor
             for j in range(0, 5):
                 bxes.append(Box((pos + BOX_SIZE * j,
                                     self.ground_level - BOX_SIZE / 2 - BOX_SIZE * height)))
-                self.boxes_objects.add(Box((pos + BOX_SIZE * j,
-                                    self.ground_level - BOX_SIZE / 2 - BOX_SIZE * height)))
             if height >= 1:
                 for j in range(0, 5):
                     lva.append(Lava((pos + BOX_SIZE * j, self.ground_level)))
-                    self.lava_objects.add(Lava((pos + BOX_SIZE * j, self.ground_level)))
 
         spks.append(Spike((pos + BOX_SIZE,
-                   self.ground_level - BOX_SIZE - BOX_SIZE / 2 + 2 - BOX_SIZE * height)))
-        self.spikes_objects.add(
-            Spike((pos + BOX_SIZE,
                    self.ground_level - BOX_SIZE - BOX_SIZE / 2 + 2 - BOX_SIZE * height)))
 
         spks.append(Spike((pos + BOX_SIZE*2,
                    self.ground_level - BOX_SIZE - BOX_SIZE / 2 + 2 - BOX_SIZE * height)))
-        self.spikes_objects.add(
-            Spike((pos + BOX_SIZE*2,
-                   self.ground_level - BOX_SIZE - BOX_SIZE / 2 + 2 - BOX_SIZE * height)))
-        #self.pieces += [LevelPiece(bxes, spks, lva,height,height)]
         return bxes, spks, lva
 
     def flat_blocks_spike_3(self,pos,height):
         bxes = []
         spks = []
         lva = []
-        #print(height)
+
         if height > 0: #Off the floor
             for j in range(0, 5):
                 bxes.append(Box((pos + BOX_SIZE * j,
                                     self.ground_level - BOX_SIZE / 2 - BOX_SIZE * height)))
-                self.boxes_objects.add(Box((pos + BOX_SIZE * j,
-                                   self.ground_level - BOX_SIZE / 2 - BOX_SIZE * height)))
             if height >= 1:
                 for j in range(0, 5):
                     lva.append(Lava((pos + BOX_SIZE * j, self.ground_level)))
-                    self.lava_objects.add(Lava((pos + BOX_SIZE * j, self.ground_level)))
 
         spks.append(Spike((pos + BOX_SIZE,
                    self.ground_level - BOX_SIZE - BOX_SIZE / 2 + 2 - BOX_SIZE * height)))
@@ -507,18 +393,6 @@ class Level:
                            self.ground_level - BOX_SIZE - BOX_SIZE / 2 + 2 - BOX_SIZE * height)))
         spks.append(Spike((pos + BOX_SIZE * 3,
                            self.ground_level - BOX_SIZE - BOX_SIZE / 2 + 2 - BOX_SIZE * height)))
-        #self.pieces += [LevelPiece(bxes, spks, lva,height,height)]
-        self.spikes_objects.add(
-            Spike((pos + BOX_SIZE,
-                   self.ground_level - BOX_SIZE - BOX_SIZE / 2 + 2 - BOX_SIZE * height)))
-
-        self.spikes_objects.add(
-            Spike((pos + BOX_SIZE * 2,
-                   self.ground_level - BOX_SIZE - BOX_SIZE / 2 + 2 - BOX_SIZE * height)))
-
-        self.spikes_objects.add(
-            Spike((pos + BOX_SIZE * 3,
-                   self.ground_level - BOX_SIZE - BOX_SIZE / 2 + 2 - BOX_SIZE * height)))
         return bxes, spks, lva
 
     def flat_jump_lava(self,pos,height):
@@ -527,41 +401,16 @@ class Level:
         lva = []
         bxes.append(Box((pos, self.ground_level - BOX_SIZE / 2 - BOX_SIZE * height)))
         bxes.append(Box((pos + BOX_SIZE * 4, self.ground_level - BOX_SIZE / 2 - BOX_SIZE * height)))
-        self.boxes_objects.add(Box((pos, self.ground_level - BOX_SIZE / 2 - BOX_SIZE * height)))
-        self.boxes_objects.add(Box((pos + BOX_SIZE * 4, self.ground_level - BOX_SIZE / 2 - BOX_SIZE * height)))
+
         lva.append(Lava((pos + BOX_SIZE, self.ground_level)))
         lva.append(Lava((pos + BOX_SIZE * 2, self.ground_level)))
         lva.append(Lava((pos + BOX_SIZE * 3, self.ground_level)))
-        self.lava_objects.add(Lava((pos + BOX_SIZE, self.ground_level)))
-        self.lava_objects.add(Lava((pos + BOX_SIZE * 2, self.ground_level)))
-        self.lava_objects.add(Lava((pos + BOX_SIZE * 3, self.ground_level)))
+
         if height > 0:
             lva.append(Lava((pos, self.ground_level)))
             lva.append(Lava((pos + BOX_SIZE * 4, self.ground_level)))
-            self.lava_objects.add(Lava((pos, self.ground_level)))
-            self.lava_objects.add(Lava((pos + BOX_SIZE * 4, self.ground_level)))
-        #self.pieces += [LevelPiece(bxes, spks, lva,height,height)]
+
         return bxes, spks, lva
-
-    def generate_n_spikes(self,n):
-        return
-    def generate_n_boxes(self,n):
-        return
-
-    def get_all_obstacles2(self, lower_bound, upper_bound):
-        obstacles = pygame.sprite.Group()
-        obstacles.add(self.platform)
-        for lp in self.pieces:
-            for b in lp.boxes:
-                if lower_bound <= b.rect.topright[0] <= upper_bound:
-                    obstacles.add(b)
-            for s in lp.spikes:
-                if lower_bound <= s.rect.topright[0] <= upper_bound:
-                    obstacles.add(s)
-            for s in lp.lava:
-                if lower_bound <= s.rect.topright[0] <= upper_bound:
-                    obstacles.add(s)
-        return obstacles
 
     def get_all_obstacles(self, lower_bound, upper_bound):
         obstacles = pygame.sprite.Group()
@@ -577,47 +426,18 @@ class Level:
                     obstacles.add(s)
         return obstacles
 
-    def get_spikes2(self, lower_bound, upper_bound):
-        obstacles = pygame.sprite.Group()
-        obstacles.add(self.platform)
-        for lp in self.pieces:
-            for s in lp.spikes:
-                if lower_bound <= s.rect.topright[0] <= upper_bound:
-                    obstacles.add(s)
-        return obstacles
-
     def get_spikes(self, lower_bound, upper_bound):
         obstacles = pygame.sprite.Group()
-        #obstacles.add(self.platform)
         for s in self.spikes_objects:
             if lower_bound <= s.rect.topright[0] <= upper_bound:
                     obstacles.add(s)
         return obstacles
 
-    def get_lava2(self, lower_bound, upper_bound):
-        obstacles = pygame.sprite.Group()
-        obstacles.add(self.platform)
-        for lp in self.pieces:
-            for s in lp.lava:
-                if lower_bound <= s.rect.topright[0] <= upper_bound:
-                    obstacles.add(s)
-        return obstacles
-
     def get_lava(self, lower_bound, upper_bound):
         obstacles = pygame.sprite.Group()
-        #obstacles.add(self.platform)
         for s in self.lava_objects:
             if lower_bound <= s.rect.topright[0] <= upper_bound:
                     obstacles.add(s)
-        return obstacles
-
-    def get_boxes2(self, lower_bound, upper_bound):
-        obstacles = pygame.sprite.Group()
-        obstacles.add(self.platform)
-        for lp in self.pieces:
-            for b in lp.boxes:
-                if lower_bound <= b.rect.topright[0] <= upper_bound:
-                    obstacles.add(b)
         return obstacles
 
     def get_boxes(self, lower_bound, upper_bound):
@@ -628,24 +448,10 @@ class Level:
                     obstacles.add(b)
         return obstacles
 
-    def get_all_spikes2(self):
-        obstacles = pygame.sprite.Group()
-        for lp in self.pieces:
-            for s in lp.spikes:
-                obstacles.add(s)
-        return obstacles
-
     def get_all_spikes(self):
         obstacles = pygame.sprite.Group()
         for s in self.spikes_objects:
             obstacles.add(s)
-        return obstacles
-
-    def get_all_lava2(self):
-        obstacles = pygame.sprite.Group()
-        for lp in self.pieces:
-            for s in lp.lava:
-                obstacles.add(s)
         return obstacles
 
     def get_all_lava(self):
@@ -654,31 +460,11 @@ class Level:
             obstacles.add(s)
         return obstacles
 
-    def get_all_boxes2(self):
-        obstacles = pygame.sprite.Group()
-        for lp in self.pieces:
-            for s in lp.boxes:
-                obstacles.add(s)
-        return obstacles
-
     def get_all_boxes(self):
         obstacles = pygame.sprite.Group()
         for s in self.boxes_objects:
             obstacles.add(s)
         return obstacles
-
-    def add_jump_up_one(self, pos, height):
-        #jump_up_one | jump_up_two
-        return
-
-    def add_jump_up_one(self, pos, height):
-        return
-
-    def add_jump_up_two(self, pos, height):
-        return
-
-    def add_jump_down(self, pos, height):
-        return
 
     def add_jump_flat(self, pos, height):
         if height == 0:
@@ -691,13 +477,4 @@ class Level:
                     Box((pos + BOX_SIZE * j, self.ground_level - BOX_SIZE / 2 - BOX_SIZE * height)))
             for j in range(0, 5):
                 self.lava_objects.add(Lava((pos + BOX_SIZE * j, self.ground_level)))
-        return
-
-    def add_no_jump_up(self, pos, height):
-        return
-
-    def add_no_jump_down(self, pos, height):
-        return
-
-    def add_no_jump_flat(self, pos, height):
         return

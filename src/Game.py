@@ -1,15 +1,9 @@
-import copy
-import math
 import random
 import sys
-import time
 
-from math import cos
-import numpy as np
-
-import playsound as playsound
+import playsound
 import pygame
-from pygame import gfxdraw, font, KEYDOWN, K_SPACE, KEYUP, MOUSEBUTTONDOWN, MOUSEBUTTONUP, mixer
+from pygame import font, KEYDOWN, K_SPACE, KEYUP, mixer
 
 from os.path import exists
 
@@ -37,7 +31,7 @@ vec = pygame.math.Vector2
 ENTITY_SIZE = 40
 FPS = 60
 BG_COLOUR = (52, 157, 172)
-NUM_PARTICLES = 250
+NUM_PARTICLES = 150
 LVL_W = 2000
 
 ACC = 0.35
@@ -55,7 +49,7 @@ green = (0, 255, 0)
 blue = (0, 0, 255)
 yellow = (255, 255, 0)
 
-font = "res/futureforces.ttf"
+font = "src/res/futureforces.ttf"
 
 
 class Game(pygame.sprite.LayeredUpdates):
@@ -125,8 +119,8 @@ class Game(pygame.sprite.LayeredUpdates):
             self.clock.tick(FPS)
 
     # Game Loop
-    def game_loop(self):
-        song_path = "res/"
+    def game_loop(self): #Assumes file in directory
+        song_path = "src/res/"
         song_title = self.song_name # Load song
         extension = '.wav'
         song_name = song_path+song_title+extension
@@ -137,35 +131,20 @@ class Game(pygame.sprite.LayeredUpdates):
         self.total_level_height = self.screen_height * 4  # Set Max level height
         print("LOADING SONG")
         song = Song(song_name,False)
-        lvl_path = "lvl/"
+        lvl_path = "src/lvl/"
         filename = lvl_path+song_title+'.obj'
 
         if not exists(filename):
-            num_levels = 10
-            song = Song(song_name, True)
-            print("GENERATING CANDIDATE LEVELS...")
-            critics = [LineCritic(), VarietyCritic(), ComponentFrequencyCritic(), EmptynessCritic()]
-
-            l1 = self.evolve_levels(self.player, song, critics, 100, 10, 0.05, 100) #GA
-
-            print("SAVING LEVEL...")
-
-            with open(filename, 'wb') as filehandler:
-                pickle.dump(l1.song.file_name,filehandler)
-                pickle.dump(self.player.gravity, filehandler) #Save gravity to recreate environment
-                pickle.dump(l1.pieces, filehandler) #save all the level pieces
-
-            filehandler.close()
-
+            print("NO SUCH FILENAME")
         else:
             with open(filename, 'rb+') as f:
-                s_name = pickle.load(f)
+                song = pickle.load(f)
                 player_grav = pickle.load(f)
                 pieces = pickle.load(f)
                 f.close()
 
                 self.player.gravity = player_grav
-                self.player.set_velocity(int((5 * BOX_SIZE) / song.spb))
+                self.player.set_velocity((5*BOX_SIZE)/song.spb)
                 l1 = Level(song, self.total_level_height, self.player, pieces, self.screen_height,[])
 
         self.camera = Camera(self.complex_camera, l1.width, self.total_level_height)  # Initialise camera
@@ -240,7 +219,7 @@ class Game(pygame.sprite.LayeredUpdates):
             self.clock.tick(FPS)  # Increment clock
 
             if countdown:
-                playsound.playsound('res/countdown.wav')
+                playsound.playsound('src/res/countdown.wav')
                 countdown = False
             elif not music_on:
                 mixer.music.play()  # Play music
@@ -250,7 +229,7 @@ class Game(pygame.sprite.LayeredUpdates):
         self.screen.blit(platform.surf, self.camera.apply(platform.rect))
 
     def draw_finish_flag(self,pos):
-        surf = pygame.image.load("res/flag.png").convert_alpha()  # Get sprite for player
+        surf = pygame.image.load("src/res/flag.png").convert_alpha()  # Get sprite for player
         rect = surf.get_rect(bottomleft=pos)
         self.screen.blit(surf,self.camera.apply(rect))
 
@@ -322,129 +301,6 @@ class Game(pygame.sprite.LayeredUpdates):
                 al += [JUMP]
         return al
 
-    def evolve_levels(self, player, song, critics, population_size, reproduction_size, mutation_rate, num_generations):
-        al = self.generate_rhythm(song) #Generate Rhythm for all the levels
-
-        levels = []
-        for i in range(0, population_size): #Generate initial population
-            levels += [Level(song, self.total_level_height, player, [], self.screen_height,al)]
-            levels[i].generate_geometry_from_grammar_rnd(player.max_vel)
-
-        print("++++++++++++++++++++++")
-        best_level = levels[0]
-        old_avg = 0
-        for g in range(0, num_generations):
-            print("+++++++++++++++++++++++++++++++++++")
-            print("GENERATION: "+str(g))
-            print("CRITIQUING LEVELS...")
-            lvl_scores = []
-            for lvl in levels:
-                lvl_scores += [0]
-                for c in critics:
-                    c.print()
-                    scr = c.critique(lvl)
-                    lvl_scores[-1] += scr
-            avg = sum(lvl_scores)/len(lvl_scores)
-            print("AVERAGE SCORE: "+str(avg))
-            print("OLD AVERAGE: "+str(old_avg))
-            print("IMPROVED WITH: "+str(avg-old_avg))
-            old_avg = avg
-            print("+++++++++++++++++++++++++++++++++++")
-            print("CHOOSING BEST LEVELS...")
-
-            best_old_gen = []
-            new_levels = []
-            for i in range(0, reproduction_size):
-                best_idx = lvl_scores.index(max(lvl_scores))
-                lvl_scores.pop(best_idx)
-                best_old_gen += [levels.pop(best_idx)]  # add to next generation population
-                if i == 0:
-                    best_level = best_old_gen[-1]
-
-            # Mutation and crossover
-            for p in range(len(best_old_gen), population_size):
-                #Choose parents
-                parent1 = best_old_gen[random.randint(0, len(best_old_gen) - 1)]
-                parent2 = best_old_gen[random.randint(0, len(best_old_gen) - 1)]  # Choose second parent randomly from the best of the previous generation
-                while parent2 == parent1:  # Try again if its the same level
-                    parent2 = best_old_gen[random.randint(0, len(best_old_gen) - 1)]  # Choose second parent randomly
-
-                # Pick random spot to cut, one point crossover
-                cut_off = random.randint(0, len(parent1.get_pieces()))
-
-                parent_pieces1 = copy.deepcopy(parent1.get_pieces())
-                parent_pieces2 = copy.deepcopy(parent2.get_pieces())
-
-                if len(parent_pieces1) == 0 or len(parent_pieces2) == 0: #In case one parent is empty, return the other
-                    if len(parent_pieces1) == 0:
-                        new_levels += parent2
-                    else:
-                        new_levels += parent1
-                else:
-                    child1 = parent_pieces1[:cut_off] + parent_pieces2[cut_off:] #Crossover
-                    #child2 = parent_pieces2[:cut_off] + parent_pieces1[cut_off-1:-1]
-
-                    #Smooth out the new child, the cutoff can produce unfeasible results
-                    final1 = self.interpolate(parent1, child1)
-
-                    if random.uniform(0,1) < mutation_rate: #mutate individual
-                        mutation_id = random.randint(1,len(final1)-1)
-                        final1[mutation_id] = parent1.choose_level_piece(final1[mutation_id].pos, final1[mutation_id].start_height,
-                                                       final1[mutation_id].end_height) #Choose a random piece to replace it
-
-                    #Add child 1 to next population
-                    new_levels += [Level(parent1.song, parent1.height, player, final1, self.screen_height, al)]
-            new_levels.extend(best_old_gen) #Add best from previous generation and do it again
-            levels = new_levels
-        return best_level
-
-
-    def interpolate(self,lvl,pieces):
-        start_pieces = copy.deepcopy(pieces)
-        new_pieces = copy.deepcopy(pieces)
-        for i in range(0,len(new_pieces)):
-            height_diff = new_pieces[i-1].end_height-new_pieces[i].start_height #Calculate difference between pieces
-            if abs(height_diff) > 0: #If difference is 1 or less these pieces are legal
-                #need to interpolate/smoothe out the level, choose new piece to replace this one
-                if height_diff < 0: #Second piece is too high
-                    new_pieces[i] = lvl.choose_level_piece(new_pieces[i].pos, new_pieces[i - 1].end_height,
-                                                       new_pieces[i - 1].end_height + 1)
-                else: #Second piece too low
-                    new_pieces[i] = lvl.choose_level_piece(new_pieces[i].pos, new_pieces[i - 1].end_height,
-                                                       new_pieces[i - 1].end_height - 1)
-
-        new_pieces[0] = LevelPiece(new_pieces[0].pos, [], [], [], 0, 0) #Enforce empty platform as first piece to give the player soe time to react
-        #DEBUGGING STUFF :) DOESNT DO ANYTHING TO THE FINAL RESULT
-        #final_pieces = []
-        #height_map_new = []
-        #height_map_old = []
-        #different = False
-        #for i in range(0,len(new_pieces)):
-        #    #Generate replacement pieces
-        #    if i == 0:
-        #        final_pieces = [LevelPiece(new_pieces[i].pos,[],[],[],0,0)] #Enforce first piece flat
-        #    else:
-        #        final_pieces += [lvl.choose_level_piece(new_pieces[i].pos, final_pieces[i-1].end_height,
-        #                                               new_pieces[i].end_height)]
-        #    height_map_old += [(start_pieces[i].start_height,start_pieces[i].end_height)]
-        #    height_map_new += [(new_pieces[i].start_height, new_pieces[i].end_height)]
-        #    if start_pieces[i].start_height != new_pieces[i].start_height or start_pieces[i].end_height != new_pieces[i].end_height:
-        #        different = True
-
-        #print("+++++++++++++++++++++++++++++++++++++++")
-        #if different:
-        #    print("CHANGE IN PIECES LISTS")
-        #    print("OLD")
-        #    print(height_map_old)
-        #    print("NEW")
-        #    print(height_map_new)
-        #else:
-        #    print("NO CHANGE IN PIECES LISTS")
-        #    print("OLD")
-        #    print(height_map_old)
-        #print("+++++++++++++++++++++++++++++++++++++++")
-        return new_pieces
-
     def simple_camera(self, camera, target_rect):
         l, t, _, _ = target_rect  # l = left,  t = top
         _, _, w, h = camera  # w = width, h = height
@@ -492,32 +348,32 @@ class Game(pygame.sprite.LayeredUpdates):
                            )
         return pygame.transform.scale(bigSurf, size)
 
-    def aaline(self, surface, color, start_pos, end_pos, width=1):
-        """ Draws wide transparent anti-aliased lines. """
-        # ref https://stackoverflow.com/a/30599392/355230
+    #def aaline(self, surface, color, start_pos, end_pos, width=1):
+    #    """ Draws wide transparent anti-aliased lines. """
+    #    # ref https://stackoverflow.com/a/30599392/355230#
 
-        x0, y0 = start_pos
-        x1, y1 = end_pos
-        midpnt_x, midpnt_y = (x0 + x1) / 2, (y0 + y1) / 2  # Center of line segment.
-        length = math.hypot(x1 - x0, y1 - y0)
-        angle = math.atan2(y0 - y1, x0 - x1)  # Slope of line.
-        width2, length2 = width / 2, length / 2
-        sin_ang, cos_ang = math.sin(angle), cos(angle)
+    #    x0, y0 = start_pos
+    #    x1, y1 = end_pos
+    #    midpnt_x, midpnt_y = (x0 + x1) / 2, (y0 + y1) / 2  # Center of line segment.
+    #    length = math.hypot(x1 - x0, y1 - y0)
+    #    angle = math.atan2(y0 - y1, x0 - x1)  # Slope of line.
+    #    width2, length2 = width / 2, length / 2
+    #    sin_ang, cos_ang = math.sin(angle), cos(angle)
 
-        width2_sin_ang = width2 * sin_ang
-        width2_cos_ang = width2 * cos_ang
-        length2_sin_ang = length2 * sin_ang
-        length2_cos_ang = length2 * cos_ang
+    #    width2_sin_ang = width2 * sin_ang
+    #    width2_cos_ang = width2 * cos_ang
+    #    length2_sin_ang = length2 * sin_ang
+    #    length2_cos_ang = length2 * cos_ang
 
-        # Calculate box ends.
-        ul = (midpnt_x + length2_cos_ang - width2_sin_ang,
-              midpnt_y + width2_cos_ang + length2_sin_ang)
-        ur = (midpnt_x - length2_cos_ang - width2_sin_ang,
-              midpnt_y + width2_cos_ang - length2_sin_ang)
-        bl = (midpnt_x + length2_cos_ang + width2_sin_ang,
-              midpnt_y - width2_cos_ang + length2_sin_ang)
-        br = (midpnt_x - length2_cos_ang + width2_sin_ang,
-              midpnt_y - width2_cos_ang - length2_sin_ang)
+    #    # Calculate box ends.
+    #    ul = (midpnt_x + length2_cos_ang - width2_sin_ang,
+    #          midpnt_y + width2_cos_ang + length2_sin_ang)
+    #    ur = (midpnt_x - length2_cos_ang - width2_sin_ang,
+    #          midpnt_y + width2_cos_ang - length2_sin_ang)
+    #    bl = (midpnt_x + length2_cos_ang + width2_sin_ang,
+    #          midpnt_y - width2_cos_ang + length2_sin_ang)
+    #    br = (midpnt_x - length2_cos_ang + width2_sin_ang,
+    #          midpnt_y - width2_cos_ang - length2_sin_ang)
 
-        pygame.gfxdraw.aapolygon(surface, (ul, ur, br, bl), color)
-        pygame.gfxdraw.filled_polygon(surface, (ul, ur, br, bl), color)
+    #    pygame.gfxdraw.aapolygon(surface, (ul, ur, br, bl), color)
+    #    pygame.gfxdraw.filled_polygon(surface, (ul, ur, br, bl), color)

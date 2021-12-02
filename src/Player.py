@@ -1,8 +1,5 @@
 import copy
 import math
-import random
-import sys
-
 import numpy as np
 import pygame
 
@@ -23,7 +20,7 @@ class Player(pygame.sprite.Sprite):
 
     def __init__(self, pos):
         super().__init__()
-        self.surf = pygame.image.load("res/player.png").convert_alpha()  # Get sprite for player
+        self.surf = pygame.image.load("src/res/player.png").convert_alpha()  # Get sprite for player
         self.rect = self.surf.get_rect()
         self.image = self.surf
         self.mask = pygame.mask.from_surface(self.image)

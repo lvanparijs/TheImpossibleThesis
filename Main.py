@@ -23,7 +23,7 @@ COLOUR_TEXT_INV = (0, 0, 0)
 vec = pygame.math.Vector2
 
 # Game Fonts
-font = "res/futureforces.ttf"
+font = "src/res/futureforces.ttf"
 
 
 # Text Renderer
@@ -87,7 +87,7 @@ class Main():
         self.screen = pygame.display.set_mode((self.screen_width, self.screen_height))
 
         pygame.display.set_caption('The Impossible Game')  # Set Title
-        pygame.display.set_icon(pygame.image.load("res/player.png"))  # Set Game Icon
+        pygame.display.set_icon(pygame.image.load("src/res/player.png"))  # Set Game Icon
 
         # Game variables
         self.clock = pygame.time.Clock()  # Initialise game clock
@@ -146,10 +146,12 @@ class Main():
         lvl_ind = 0
         lvls = self.get_all_levels()
 
-        prefix = 'lvl/'
+        prefix = 'src/lvl/'
         suffix = '.obj'
 
+        print(lvls)
         sel_level_name = lvls[lvl_ind]
+
         if prefix in sel_level_name:
             sel_level_name = sel_level_name.replace(prefix, '')
         if suffix in sel_level_name:
@@ -317,8 +319,7 @@ class Main():
         pygame.display.update()
 
     def get_all_levels(self):
-        path = r'C:\Users\Administrator.SHAREPOINTSKY\Desktop\Work'
-        path = 'lvl/'
+        path = 'src/lvl/'
         list_of_files = []
 
         for root, dirs, files in os.walk(path):

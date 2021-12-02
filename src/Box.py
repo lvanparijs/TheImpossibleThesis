@@ -4,7 +4,7 @@ import pygame
 class Box(pygame.sprite.Sprite):
     def __init__(self, pos):
         super().__init__()
-        self.surf = pygame.image.load("res/block.png").convert_alpha()
+        self.surf = pygame.image.load("src/res/block.png").convert_alpha()
         self.rect = self.surf.get_rect(center=pos)
         self.pos = pos
         self.image = self.surf

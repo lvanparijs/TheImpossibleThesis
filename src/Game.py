@@ -123,7 +123,6 @@ class Game(pygame.sprite.LayeredUpdates):
     def game_loop(self):
         song_path = "res/"
         song_title = self.song_name # Load song
-        #song_title = 'Strauss'
         extension = '.wav'
         song_name = song_path+song_title+extension
         mixer.music.load(song_name)

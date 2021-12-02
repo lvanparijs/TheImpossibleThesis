@@ -149,7 +149,9 @@ class Main():
         prefix = 'lvl/'
         suffix = '.obj'
 
+        print(lvls)
         sel_level_name = lvls[lvl_ind]
+
         if prefix in sel_level_name:
             sel_level_name = sel_level_name.replace(prefix, '')
         if suffix in sel_level_name:
@@ -317,7 +319,6 @@ class Main():
         pygame.display.update()
 
     def get_all_levels(self):
-        path = r'C:\Users\Administrator.SHAREPOINTSKY\Desktop\Work'
         path = 'lvl/'
         list_of_files = []
 

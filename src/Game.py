@@ -1,15 +1,10 @@
 import copy
-import math
 import random
 import sys
-import time
 
-from math import cos
-import numpy as np
-
-import playsound as playsound
+import playsound
 import pygame
-from pygame import gfxdraw, font, KEYDOWN, K_SPACE, KEYUP, MOUSEBUTTONDOWN, MOUSEBUTTONUP, mixer
+from pygame import font, KEYDOWN, K_SPACE, KEYUP, mixer
 
 from os.path import exists
 
@@ -37,7 +32,7 @@ vec = pygame.math.Vector2
 ENTITY_SIZE = 40
 FPS = 60
 BG_COLOUR = (52, 157, 172)
-NUM_PARTICLES = 250
+NUM_PARTICLES = 150
 LVL_W = 2000
 
 ACC = 0.35
@@ -128,6 +123,7 @@ class Game(pygame.sprite.LayeredUpdates):
     def game_loop(self):
         song_path = "res/"
         song_title = self.song_name # Load song
+        song_title = 'Strauss'
         extension = '.wav'
         song_name = song_path+song_title+extension
         mixer.music.load(song_name)
@@ -146,12 +142,13 @@ class Game(pygame.sprite.LayeredUpdates):
             print("GENERATING CANDIDATE LEVELS...")
             critics = [LineCritic(), VarietyCritic(), ComponentFrequencyCritic(), EmptynessCritic()]
 
-            l1 = self.evolve_levels(self.player, song, critics, 100, 10, 0.05, 100) #GA
+            l1 = self.evolve_levels(self.player, song, critics, 150, 15, 0.05, 100) #GA
 
             print("SAVING LEVEL...")
 
             with open(filename, 'wb') as filehandler:
-                pickle.dump(l1.song.file_name,filehandler)
+                #pickle.dump(l1.song.file_name,filehandler)
+                pickle.dump(l1.song,filehandler) #Need this to set the speed to desired level
                 pickle.dump(self.player.gravity, filehandler) #Save gravity to recreate environment
                 pickle.dump(l1.pieces, filehandler) #save all the level pieces
 
@@ -159,7 +156,8 @@ class Game(pygame.sprite.LayeredUpdates):
 
         else:
             with open(filename, 'rb+') as f:
-                s_name = pickle.load(f)
+                #s_name = pickle.load(f)
+                song = pickle.load(f)
                 player_grav = pickle.load(f)
                 pieces = pickle.load(f)
                 f.close()
@@ -492,32 +490,32 @@ class Game(pygame.sprite.LayeredUpdates):
                            )
         return pygame.transform.scale(bigSurf, size)
 
-    def aaline(self, surface, color, start_pos, end_pos, width=1):
-        """ Draws wide transparent anti-aliased lines. """
-        # ref https://stackoverflow.com/a/30599392/355230
+    #def aaline(self, surface, color, start_pos, end_pos, width=1):
+    #    """ Draws wide transparent anti-aliased lines. """
+    #    # ref https://stackoverflow.com/a/30599392/355230#
 
-        x0, y0 = start_pos
-        x1, y1 = end_pos
-        midpnt_x, midpnt_y = (x0 + x1) / 2, (y0 + y1) / 2  # Center of line segment.
-        length = math.hypot(x1 - x0, y1 - y0)
-        angle = math.atan2(y0 - y1, x0 - x1)  # Slope of line.
-        width2, length2 = width / 2, length / 2
-        sin_ang, cos_ang = math.sin(angle), cos(angle)
+    #    x0, y0 = start_pos
+    #    x1, y1 = end_pos
+    #    midpnt_x, midpnt_y = (x0 + x1) / 2, (y0 + y1) / 2  # Center of line segment.
+    #    length = math.hypot(x1 - x0, y1 - y0)
+    #    angle = math.atan2(y0 - y1, x0 - x1)  # Slope of line.
+    #    width2, length2 = width / 2, length / 2
+    #    sin_ang, cos_ang = math.sin(angle), cos(angle)
 
-        width2_sin_ang = width2 * sin_ang
-        width2_cos_ang = width2 * cos_ang
-        length2_sin_ang = length2 * sin_ang
-        length2_cos_ang = length2 * cos_ang
+    #    width2_sin_ang = width2 * sin_ang
+    #    width2_cos_ang = width2 * cos_ang
+    #    length2_sin_ang = length2 * sin_ang
+    #    length2_cos_ang = length2 * cos_ang
 
-        # Calculate box ends.
-        ul = (midpnt_x + length2_cos_ang - width2_sin_ang,
-              midpnt_y + width2_cos_ang + length2_sin_ang)
-        ur = (midpnt_x - length2_cos_ang - width2_sin_ang,
-              midpnt_y + width2_cos_ang - length2_sin_ang)
-        bl = (midpnt_x + length2_cos_ang + width2_sin_ang,
-              midpnt_y - width2_cos_ang + length2_sin_ang)
-        br = (midpnt_x - length2_cos_ang + width2_sin_ang,
-              midpnt_y - width2_cos_ang - length2_sin_ang)
+    #    # Calculate box ends.
+    #    ul = (midpnt_x + length2_cos_ang - width2_sin_ang,
+    #          midpnt_y + width2_cos_ang + length2_sin_ang)
+    #    ur = (midpnt_x - length2_cos_ang - width2_sin_ang,
+    #          midpnt_y + width2_cos_ang - length2_sin_ang)
+    #    bl = (midpnt_x + length2_cos_ang + width2_sin_ang,
+    #          midpnt_y - width2_cos_ang + length2_sin_ang)
+    #    br = (midpnt_x - length2_cos_ang + width2_sin_ang,
+    #          midpnt_y - width2_cos_ang - length2_sin_ang)
 
-        pygame.gfxdraw.aapolygon(surface, (ul, ur, br, bl), color)
-        pygame.gfxdraw.filled_polygon(surface, (ul, ur, br, bl), color)
+    #    pygame.gfxdraw.aapolygon(surface, (ul, ur, br, bl), color)
+    #    pygame.gfxdraw.filled_polygon(surface, (ul, ur, br, bl), color)

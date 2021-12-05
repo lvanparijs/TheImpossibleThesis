@@ -29,3 +29,14 @@ class LevelPiece():
 
     def get_all_boxes(self):
         return self.boxes
+
+    def get_last_piece_x(self):
+        last_x = 0
+        for b in self.boxes:
+            if b[0] > last_x:
+                last_x = b[0]
+        for s in self.spikes:
+            if s[0] > last_x:
+                last_x = s[0]
+        return last_x
+

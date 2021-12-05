@@ -81,12 +81,14 @@ class Level:
         bxes = []
         spks = []
         lva = []
+
         if start_height > end_height:
             if random.uniform(0,1) > 0.5: #Equal chance of replacing
                 bxes,spks,lva = self.jump_down(pos, start_height)
             else:
                 bxes,spks,lva = self.fall_down(pos, start_height)
         elif start_height < end_height:
+
             bxes,spks,lva = self.jump_up_1(pos,start_height)
         else: #Equal height, so pick flat piece
             if start_height <= 0: #On ground
@@ -139,7 +141,7 @@ class Level:
         print("GENERATING GEOMETRY...")
         obstacle_pos = self.song.beat_times * vel * 60 #Initialise the beginning of each level piece
         height_cnt = 0 #Floor == 0
-        self.height_line += [height_cnt]
+        self.height_line = [0]
         self.pieces += [LevelPiece(obstacle_pos[0], [], [], [], height_cnt, height_cnt)] #Start with empty piece
 
         for i in range(1, len(obstacle_pos)): #For each possible obstacle location

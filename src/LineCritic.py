@@ -1,6 +1,3 @@
-import math
-
-import librosa
 import numpy as np
 
 from src.Critic import Critic
@@ -13,9 +10,6 @@ class LineCritic(Critic):
 
     def critique(self, lvl):
         #Returns a score between 0-1 based on the particular critics scope
-        print("LINECRITIC")
-        print(lvl.height_line)
-        print(lvl.song.height_notes)
         while len(lvl.height_line) < len(lvl.song.height_notes):
             lvl.height_line = [0] + lvl.height_line
         array1 = np.array(lvl.height_line)
@@ -28,7 +22,6 @@ class LineCritic(Critic):
         subtracted_array_max = np.subtract(array3, array2)
         subtracted_max = list(subtracted_array_max)
         return 1-(np.sum(np.square(subtracted))/np.sum(np.square(subtracted_max))) #sum Squared difference
-
 
 
     def print(self):

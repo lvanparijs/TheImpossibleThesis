@@ -1,14 +1,18 @@
+import random
 from random import randint
 import os
 
 import pygame
 
+from src.Box import Box
 from src.Camera import Camera
 from src.Game import Game
+from src.Lava import Lava
 from src.Level import Level
 from src.Particle import Particle
 from src.Platform import Platform
 from src.Player import Player
+from src.Spike import Spike
 
 SCR_W = 640
 SCR_H = 480
@@ -96,6 +100,130 @@ class Main():
         self.gradient = vertical_gradient((SCR_W, SCR_H), COLOUR1, COLOUR2)
         self.main_menu()
 
+    def tutorial(self):
+        particles = []
+        tmp_player = Player((0, 350))
+        tmp_player.rotate = True
+        ground_height = int(self.screen_height * 0.66)
+
+        BOX_SIZE = 40
+
+        lvl = Level(None, SCR_H, tmp_player, [], self.screen_height * 0.9, [])
+
+        back_to_main = False
+
+        over_obstacle = False
+        sh = random.randint(0,1)
+        eh = random.randint(0,1)
+        center_piece = lvl.choose_level_piece(self.screen_width / 2 - BOX_SIZE * 2, sh, eh)
+        cp_x = center_piece.get_last_piece_x()
+        lvl = Level(None, SCR_H, tmp_player, [center_piece], self.screen_height * 0.9, [])
+        lvl.finish_flag = (self.screen_width * 2, self.screen_height)
+
+        entities = pygame.sprite.Group()
+        entities.add(lvl.platform)
+        entities.add(lvl.boxes_objects)
+
+
+        explosion = False
+        explosion_cnt = 40
+        cnt = 0
+        jump = False
+        title = text_format("TURORIAL", font, 60, COLOUR_TEXT)
+        objective_title = text_format("OBJECTIVE: ", font, 25, COLOUR_TEXT)
+        objective1 = text_format("Make it to the end of each level", font, 25, COLOUR_TEXT)
+        objective2 = text_format("\t\t\t\t while avoiding harmful obstacles", font, 25,
+                                 COLOUR_TEXT)
+
+        jump_explanation1 = text_format("Jump on the Platform _\t \t", font, 25, COLOUR_TEXT)
+        jump_explanation2 = text_format("\t \tand Boxes\t \t with [SPACE]", font, 25, COLOUR_TEXT)
+
+        hostile_explanation = text_format("Watch out for the Spikes\t\t and Lava,", font, 25, COLOUR_TEXT)
+        game_over_explanation = text_format("\t \t it is game over when you touch them", font, 25, COLOUR_TEXT)
+
+
+
+        while not back_to_main:
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    quit()
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_SPACE:
+                        jump = True
+                    elif event.key == pygame.K_ESCAPE:
+                        back_to_main = True
+                if event.type == pygame.KEYUP:
+                    if event.key == pygame.K_SPACE:
+                        jump = False
+
+            self.screen.blit(self.gradient, pygame.Rect((0, 0, self.screen_width, self.screen_height)))
+
+            entities.draw(self.screen)
+
+            #Draw center piece
+            for bx in center_piece.boxes:
+                b = Box(bx)
+                self.screen.blit(b.surf, self.camera.apply(b.rect))
+            for sp in center_piece.spikes:
+                b = Spike(sp)
+                self.screen.blit(b.surf, self.camera.apply(b.rect))
+            for lv in center_piece.lava:
+                b = Lava(lv)
+                self.screen.blit(b.surf, self.camera.apply(b.rect))
+
+            if jump:
+                tmp_player.jump(entities)
+
+
+
+            self.screen.blit(title, (10, 10))
+            self.screen.blit(objective_title, (10, 60))
+            self.screen.blit(objective1, (10, 90))
+            self.screen.blit(objective2, (10, 120))
+            self.screen.blit(jump_explanation1, (10, 420))
+            self.screen.blit(jump_explanation2, (50, 440))
+            pygame.draw.rect(self.screen, COLOUR_TEXT, (233, 438, 24, 24), width=0)
+            pygame.draw.rect(self.screen, COLOUR_TEXT_INV, (235, 440, 20, 20), width=0)
+            self.screen.blit(hostile_explanation, (10, 170))
+            self.screen.blit(game_over_explanation, (10, 200))
+            pygame.draw.rect(self.screen, COLOUR_TEXT_INV, (540, 174, 24, 12), width=0)
+            pygame.draw.polygon(self.screen, COLOUR_TEXT, [(370, 185), (390, 185), (380, 170)], width=3)
+            pygame.draw.polygon(self.screen, (100,100,100), [(370, 185),(390, 185),(380, 170)], width=0)
+
+            tmp_player.draw(self.screen, self.camera)
+
+            pygame.display.update()
+            self.clock.tick(FPS)
+
+            tmp_player.move(lvl.width)
+            collision = tmp_player.update(lvl)
+
+
+            if tmp_player.pos[0] > self.screen_width-BOX_SIZE*2 and not over_obstacle: #If player passed obstacle, put new one
+                over_obstacle = True
+                sh = random.randint(0, 1)
+                eh = random.randint(0, 1)
+                center_piece = lvl.choose_level_piece(self.screen_width / 2-BOX_SIZE*2, sh, eh)
+                cp_x = center_piece.get_last_piece_x()
+                lvl = Level(None, SCR_H, tmp_player, [center_piece], self.screen_height * 0.9, [])
+                lvl.finish_flag = (self.screen_width*2,self.screen_height)
+                entities = pygame.sprite.Group()
+                entities.add(lvl.platform)
+                entities.add(lvl.boxes_objects)
+
+            if tmp_player.pos[0] >= self.screen_width:
+                over_obstacle = False
+
+            if collision:
+                #self.explosion(tmp_player, lvl)  # Animation
+                #RESET PLAYER
+                tmp_player = Player((0, 350))
+
+
+
+
     def main_menu(self):
         particles = []
 
@@ -149,7 +277,6 @@ class Main():
         prefix = 'lvl/'
         suffix = '.obj'
 
-        print(lvls)
         sel_level_name = lvls[lvl_ind]
 
         if prefix in sel_level_name:
@@ -249,15 +376,16 @@ class Main():
                     elif event.key == pygame.K_DOWN:
                         selected_ind += 1
                         selected_ind = min(len(selected)-1, selected_ind)
-                    print(selected[selected_ind])
                     if event.key == pygame.K_RETURN:
                         if selected[selected_ind] == "level":
                             start = True
                             self.explosion(tmp_player, lvl)
                             print("Start")
-                        if selected[selected_ind] == "quit":
+                        elif selected[selected_ind] == "quit":
                             pygame.quit()
                             quit()
+                        elif selected[selected_ind] == "tutorial":
+                            self.tutorial()
                     if event.key == pygame.K_LEFT and selected[selected_ind] == "level":
                         lvl_ind -= 1
                         lvl_ind = max(0,lvl_ind)
@@ -342,7 +470,6 @@ while True:
     else:
         main.get_all_levels()
         player.reset(START_POS)
-        print(main.chosen_level)
         game = Game(main.chosen_level,player, main.screen, SCR_W, SCR_H)
         restart = game.restart
         game = None

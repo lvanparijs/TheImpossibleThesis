@@ -1,4 +1,5 @@
 import copy
+import csv
 import random
 import sys
 
@@ -13,8 +14,8 @@ import pickle
 from src.Box import Box
 from src.Camera import Camera
 from src.ComponentFrequencyCritic import ComponentFrequencyCritic
-from src.DifficultyCritic import DifficultyCritic
 from src.EmptynessCritic import EmptynessCritic
+from src.JumpCritic import JumpCritic
 from src.Lava import Lava
 from src.Level import Level, BOX_SIZE
 from src.LevelPiece import LevelPiece
@@ -25,6 +26,7 @@ from src.Particle import Particle
 from src.Platform import Platform
 from src.Player import Player
 from src.Song import Song
+from src.SpeedCritic import SpeedCritic
 from src.Spike import Spike
 from src.VarietyCritic import VarietyCritic
 
@@ -139,14 +141,13 @@ class Game(pygame.sprite.LayeredUpdates):
             num_levels = 10
             song = Song(song_name, True)
             print("GENERATING CANDIDATE LEVELS...")
-            critics = [LineCritic(), VarietyCritic(), ComponentFrequencyCritic(), EmptynessCritic()]
+            critics = [LineCritic(), VarietyCritic(), ComponentFrequencyCritic(), EmptynessCritic(), JumpCritic(), SpeedCritic()]
 
             l1 = self.evolve_levels(self.player, song, critics, 150, 15, 0.05, 100) #GA
 
             print("SAVING LEVEL...")
 
             with open(filename, 'wb') as filehandler:
-                #pickle.dump(l1.song.file_name,filehandler)
                 pickle.dump(l1.song,filehandler) #Need this to set the speed to desired level
                 pickle.dump(self.player.gravity, filehandler) #Save gravity to recreate environment
                 pickle.dump(l1.pieces, filehandler) #save all the level pieces
@@ -155,7 +156,6 @@ class Game(pygame.sprite.LayeredUpdates):
 
         else:
             with open(filename, 'rb+') as f:
-                #s_name = pickle.load(f)
                 song = pickle.load(f)
                 player_grav = pickle.load(f)
                 pieces = pickle.load(f)
@@ -312,8 +312,12 @@ class Game(pygame.sprite.LayeredUpdates):
         NO_ACTION = 0
         JUMP = 1
         al = []
+        flat_cnt = 2
         for b in song.beat_times: #Generates actions for the times of the beats
-            if random.uniform(0,1) > random.uniform(0,1):
+            if flat_cnt > 0:
+                al += [NO_ACTION]
+                flat_cnt-=1
+            elif random.uniform(0,1) > random.uniform(0,1):
                 al += [NO_ACTION]
             else:
                 al += [JUMP]
@@ -321,7 +325,7 @@ class Game(pygame.sprite.LayeredUpdates):
 
     def evolve_levels(self, player, song, critics, population_size, reproduction_size, mutation_rate, num_generations):
         al = self.generate_rhythm(song) #Generate Rhythm for all the levels
-
+        fitness_over_generations = []
         levels = []
         for i in range(0, population_size): #Generate initial population
             levels += [Level(song, self.total_level_height, player, [], self.screen_height,al)]
@@ -346,6 +350,7 @@ class Game(pygame.sprite.LayeredUpdates):
             print("OLD AVERAGE: "+str(old_avg))
             print("IMPROVED WITH: "+str(avg-old_avg))
             old_avg = avg
+            fitness_over_generations += [[avg,g]]
             print("+++++++++++++++++++++++++++++++++++")
             print("CHOOSING BEST LEVELS...")
 
@@ -361,10 +366,10 @@ class Game(pygame.sprite.LayeredUpdates):
             # Mutation and crossover
             for p in range(len(best_old_gen), population_size):
                 #Choose parents
-                parent1 = best_old_gen[random.randint(0, len(best_old_gen) - 1)]
-                parent2 = best_old_gen[random.randint(0, len(best_old_gen) - 1)]  # Choose second parent randomly from the best of the previous generation
+                parent1 = best_old_gen[random.randint(1, len(best_old_gen) - 1)]
+                parent2 = best_old_gen[random.randint(1, len(best_old_gen) - 1)]  # Choose second parent randomly from the best of the previous generation
                 while parent2 == parent1:  # Try again if its the same level
-                    parent2 = best_old_gen[random.randint(0, len(best_old_gen) - 1)]  # Choose second parent randomly
+                    parent2 = best_old_gen[random.randint(1, len(best_old_gen) - 1)]  # Choose second parent randomly
 
                 # Pick random spot to cut, one point crossover
                 cut_off = random.randint(0, len(parent1.get_pieces()))
@@ -393,6 +398,16 @@ class Game(pygame.sprite.LayeredUpdates):
                     new_levels += [Level(parent1.song, parent1.height, player, final1, self.screen_height, al)]
             new_levels.extend(best_old_gen) #Add best from previous generation and do it again
             levels = new_levels
+
+        fields = ['Fitness', 'Generation']
+
+        with open(song.file_name+'Evolution.csv', 'w') as f:
+            # using csv.writer method from CSV package
+            write = csv.writer(f)
+            write.writerow(fields)
+            write.writerows(fitness_over_generations)
+        print("START HEIGHT OF BEST LEVEL:")
+        print(best_level.pieces[0].start_height)
         return best_level
 
 

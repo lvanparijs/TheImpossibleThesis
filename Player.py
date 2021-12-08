@@ -3,8 +3,6 @@ import math
 import numpy as np
 import pygame
 
-from src.Platform import Platform
-
 vec = pygame.math.Vector2
 ACC = 0.35
 FRIC = -0.12

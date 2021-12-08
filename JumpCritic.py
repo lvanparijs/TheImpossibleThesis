@@ -1,4 +1,4 @@
-from src.Critic import Critic
+from Critic import Critic
 
 
 class JumpCritic(Critic): #Difficulty consists of a combination of speed, spikes ratio(CompnentFrequencyCritic), ratio of jump/no_action, and VarietyCritic

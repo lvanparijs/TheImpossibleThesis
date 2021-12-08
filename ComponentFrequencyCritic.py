@@ -1,4 +1,4 @@
-from src.Critic import Critic
+from Critic import Critic
 
 
 class ComponentFrequencyCritic(Critic): #Scores a level based on the spike/obstacle ratio and the genre

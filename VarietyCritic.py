@@ -1,7 +1,7 @@
-from src.Critic import Critic
+from Critic import Critic
 import numpy as np
 
-class VarietyCritic(Critic):
+class VarietyCritic(Critic): #Linearity Critic/Height Variation
     #Essentially the Line critic with a flat line, the move variation the higher the score
     def __init__(self):
         pass

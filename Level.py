@@ -1,12 +1,13 @@
+import copy
 import random
 
 import pygame
 
-from src.Box import Box
-from src.Lava import Lava
-from src.LevelPiece import LevelPiece
-from src.Platform import Platform
-from src.Spike import Spike
+from Box import Box
+from Lava import Lava
+from LevelPiece import LevelPiece
+from Platform import Platform
+from Spike import Spike
 
 vec = pygame.math.Vector2
 BOX_SIZE = 40
@@ -19,6 +20,8 @@ class Level:
     ##A level is essentially a collection of obstacles, the ground is always the same, created based on a music track
 
     def __init__(self, song, height, player, lvl_pieces, screen_height, action_list):
+        self.start_buffer = 400
+        self.screen_height = screen_height
         if song is None: #For Main Menu
             self.width = 640
             self.tempo = 0
@@ -137,9 +140,28 @@ class Level:
             height_line += [p.end_height]
         return height_line
 
+    def flatten(self):
+        cur_height = 0
+        piece_id = 0
+        piece1 = LevelPiece(0, [], [], [], cur_height, cur_height)
+        piece2 = self.pieces[piece_id] #Grab first piece
+        new_pieces_list = copy.deepcopy(self.pieces)
+        #print(piece1.end_height)
+        while piece2.start_height > piece1.end_height:
+            #Switch pieces
+            bx,sp,lv = self.jump_up_1(piece2.pos,piece1.end_height)
+            new_piece = LevelPiece(piece2.pos,bx,sp,lv,piece1.end_height,piece1.end_height+1)
+            new_pieces_list[piece_id] = new_piece
+            piece_id += 1
+            piece1 = new_piece
+            piece2 = self.pieces[piece_id]
+        #Return the new level
+        return Level(self.song, self.height, self.player, new_pieces_list, self.screen_height, self.action_list)
+
+
     def generate_geometry_from_grammar_rnd(self,vel):
         print("GENERATING GEOMETRY...")
-        obstacle_pos = self.song.beat_times * vel * 60 #Initialise the beginning of each level piece
+        obstacle_pos = self.song.beat_times * vel * 60 + self.start_buffer #Initialise the beginning of each level piece
         height_cnt = 0 #Floor == 0
         self.height_line = [0]
         self.pieces += [LevelPiece(obstacle_pos[0], [], [], [], height_cnt, height_cnt)] #Start with empty piece

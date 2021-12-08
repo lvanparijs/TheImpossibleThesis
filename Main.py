@@ -4,15 +4,15 @@ import os
 
 import pygame
 
-from src.Box import Box
-from src.Camera import Camera
-from src.Game import Game
-from src.Lava import Lava
-from src.Level import Level
-from src.Particle import Particle
-from src.Platform import Platform
-from src.Player import Player
-from src.Spike import Spike
+from Box import Box
+from Camera import Camera
+from Game import Game
+from Lava import Lava
+from Level import Level
+from Particle import Particle
+from Platform import Platform
+from Player import Player
+from Spike import Spike
 
 SCR_W = 640
 SCR_H = 480
@@ -80,12 +80,12 @@ def complex_camera(camera, target_rect):
 
 class Main():
 
-    def __init__(self):
+    def __init__(self,order):
         # Display variables
         pygame.init()  # Initialise display
 
         self.chosen_level = ''
-
+        self.lvl_order = order
         (self.screen_width, self.screen_height) = (SCR_W, SCR_H)  # Set screen size
 
         self.screen = pygame.display.set_mode((self.screen_width, self.screen_height))
@@ -130,6 +130,8 @@ class Main():
         cnt = 0
         jump = False
         title = text_format("TURORIAL", font, 60, COLOUR_TEXT)
+        esc = text_format("Press [ESC]", font, 30, COLOUR_TEXT)
+        esc2 = text_format("To return to menu", font, 20, COLOUR_TEXT)
         objective_title = text_format("OBJECTIVE: ", font, 25, COLOUR_TEXT)
         objective1 = text_format("Make it to the end of each level", font, 25, COLOUR_TEXT)
         objective2 = text_format("\t\t\t\t while avoiding harmful obstacles", font, 25,
@@ -179,6 +181,8 @@ class Main():
 
 
             self.screen.blit(title, (10, 10))
+            self.screen.blit(esc,(440,10))
+            self.screen.blit(esc2, (420, 40))
             self.screen.blit(objective_title, (10, 60))
             self.screen.blit(objective1, (10, 90))
             self.screen.blit(objective2, (10, 120))
@@ -277,7 +281,7 @@ class Main():
         prefix = 'lvl/'
         suffix = '.obj'
 
-        sel_level_name = lvls[lvl_ind]
+        sel_level_name = lvls[self.lvl_order[lvl_ind]]
 
         if prefix in sel_level_name:
             sel_level_name = sel_level_name.replace(prefix, '')
@@ -383,13 +387,13 @@ class Main():
                             print("Start")
                         elif selected[selected_ind] == "quit":
                             pygame.quit()
-                            quit()
+                            exit()
                         elif selected[selected_ind] == "tutorial":
                             self.tutorial()
                     if event.key == pygame.K_LEFT and selected[selected_ind] == "level":
                         lvl_ind -= 1
                         lvl_ind = max(0,lvl_ind)
-                        sel_level_name = lvls[lvl_ind]
+                        sel_level_name = lvls[self.lvl_order[lvl_ind]]
                         if prefix in sel_level_name:
                             sel_level_name = sel_level_name.replace(prefix, '')
                         if suffix in sel_level_name:
@@ -398,7 +402,7 @@ class Main():
                     elif event.key == pygame.K_RIGHT and selected[selected_ind] == "level":
                         lvl_ind += 1
                         lvl_ind = min(len(lvls)-1, lvl_ind)
-                        sel_level_name = lvls[lvl_ind]
+                        sel_level_name = lvls[self.lvl_order[lvl_ind]]
                         if prefix in sel_level_name:
                             sel_level_name = sel_level_name.replace(prefix, '')
                         if suffix in sel_level_name:
@@ -457,15 +461,18 @@ class Main():
             print(name)
         return list_of_files
 
-main = Main()
+lvl_order = [0,1,2,3,4,5,6,7,8,9]
+random.shuffle(lvl_order)
+main = Main(lvl_order)
 game = 1
 restart = True
 START_POS = (40,370)
 player = Player(START_POS)
 
+
 while True:
     if not restart:
-        main = Main()
+        main = Main(lvl_order)
         restart = True
     else:
         main.get_all_levels()

@@ -3,7 +3,6 @@ import csv
 import random
 import sys
 
-import playsound
 import pygame
 from pygame import font, KEYDOWN, K_SPACE, KEYUP, mixer
 
@@ -11,24 +10,21 @@ from os.path import exists
 
 import pickle
 
-from src.Box import Box
-from src.Camera import Camera
-from src.ComponentFrequencyCritic import ComponentFrequencyCritic
-from src.EmptynessCritic import EmptynessCritic
-from src.JumpCritic import JumpCritic
-from src.Lava import Lava
-from src.Level import Level, BOX_SIZE
-from src.LevelPiece import LevelPiece
-from src.LineCritic import LineCritic
-from src.Particle import Particle
+from Box import Box
+from Camera import Camera
+from ComponentFrequencyCritic import ComponentFrequencyCritic
+from EmptynessCritic import EmptynessCritic
+from JumpCritic import JumpCritic
+from Lava import Lava
+from Level import Level, BOX_SIZE
+from LevelPiece import LevelPiece
+from LineCritic import LineCritic
 
 # GLOBAL STUFF
-from src.Platform import Platform
-from src.Player import Player
-from src.Song import Song
-from src.SpeedCritic import SpeedCritic
-from src.Spike import Spike
-from src.VarietyCritic import VarietyCritic
+from Song import Song
+from SpeedCritic import SpeedCritic
+from Spike import Spike
+from VarietyCritic import VarietyCritic
 
 vec = pygame.math.Vector2
 ENTITY_SIZE = 40
@@ -80,6 +76,7 @@ class Game(pygame.sprite.LayeredUpdates):
         self.level = None
 
         scr.blit(self.gradient, pygame.Rect((0, 0, scr_w, scr_h)))
+        #self.no_gradient(scr,BG_COLOUR)
         pygame.display.update()
         self.game_loop()
         self.restart = self.game_over_screen()
@@ -102,6 +99,7 @@ class Game(pygame.sprite.LayeredUpdates):
             alpha += d_alpha
             text.set_alpha(alpha)
             self.screen.blit(self.gradient, pygame.Rect((0, 0, self.screen_width, self.screen_height)))
+            #self.no_gradient(self.screen,BG_COLOUR)
             self.screen.blit(text, (40, 250))
             self.screen.blit(text_menu, (60, 450))
             lvl.get_all_obstacles(0, self.screen_width).draw(self.screen)
@@ -124,11 +122,12 @@ class Game(pygame.sprite.LayeredUpdates):
     # Game Loop
     def game_loop(self):
         song_path = "res/"
-        song_title = self.song_name # Load song
+        song_title = self.song_name # Load song0'
         extension = '.wav'
         song_name = song_path+song_title+extension
         mixer.music.load(song_name)
         self.screen.blit(self.gradient, pygame.Rect((0, 0, self.screen_width, self.screen_height)))  # Paint background
+        #self.no_gradient(self.screen, BG_COLOUR)
         self.player.attempts += 1  # Increment Attempts
 
         self.total_level_height = self.screen_height * 4  # Set Max level height
@@ -143,7 +142,7 @@ class Game(pygame.sprite.LayeredUpdates):
             print("GENERATING CANDIDATE LEVELS...")
             critics = [LineCritic(), VarietyCritic(), ComponentFrequencyCritic(), EmptynessCritic(), JumpCritic(), SpeedCritic()]
 
-            l1 = self.evolve_levels(self.player, song, critics, 150, 15, 0.05, 100) #GA
+            l1 = self.evolve_levels(self.player, song, critics, 200, 20, 0.05, 50) #GA
 
             print("SAVING LEVEL...")
 
@@ -164,6 +163,8 @@ class Game(pygame.sprite.LayeredUpdates):
                 self.player.gravity = player_grav
                 self.player.set_velocity(int((5 * BOX_SIZE) / song.spb))
                 l1 = Level(song, self.total_level_height, self.player, pieces, self.screen_height,[])
+
+
 
         self.camera = Camera(self.complex_camera, l1.width, self.total_level_height)  # Initialise camera
         P1 = self.player
@@ -221,6 +222,7 @@ class Game(pygame.sprite.LayeredUpdates):
 
             # Draw updates screen
             self.screen.blit(self.gradient, pygame.Rect((0, 0, self.screen_width, self.screen_height)))
+            #self.no_gradient(self.screen, BG_COLOUR)
 
             #Draw Platform, finish and pieces
             self.draw_platform(l1.get_platform())
@@ -228,18 +230,26 @@ class Game(pygame.sprite.LayeredUpdates):
             self.draw(l1.get_pieces_in_range(P1.pos.x - self.screen_width,P1.pos.x + self.screen_width))
 
             # DRAW SCORE
-            if not countdown:
-                text = self.text_format("ATTEMPT " + str(P1.get_attempts()), font, 60, white)
-                self.screen.blit(text, (40, 400))
+            #if not countdown:
+            #    text = self.text_format("ATTEMPT " + str(P1.get_attempts()), font, 60, white)
+            #    self.screen.blit(text, (40, 400))
 
             P1.draw(self.screen, self.camera)  # Draw player
             pygame.display.update()  # Update
             self.clock.tick(FPS)  # Increment clock
 
             if countdown:
-                playsound.playsound('res/countdown.wav')
+                mixer.music.unload()
+                mixer.music.load('res/countdown.wav')
+                mixer.music.set_endevent(pygame.ACTIVEEVENT)
+                mixer.music.play()
+                while mixer.music.get_busy():
+                    continue
+                mixer.music.stop()
+                mixer.music.unload()
+                mixer.music.load(song_name)
                 countdown = False
-            elif not music_on:
+            elif not music_on and P1.pos[0] >= l1.start_buffer:
                 mixer.music.play()  # Play music
                 music_on = True
 
@@ -278,17 +288,17 @@ class Game(pygame.sprite.LayeredUpdates):
     def explosion(self, player, lvl):
         pos = player.rect.center
         # Explosion animation, purely for aesthetics
-        particles = []
-        for i in range(1, NUM_PARTICLES):
-            particles += [Particle(pos)]
+        #particles = []
+        #for i in range(1, NUM_PARTICLES):
+        #    particles += [Particle(pos)]
 
         circle_size = 5
         circle_alpha = 180
 
-        while len(particles) > 0:  # Run until all particles faded
+        while circle_alpha > 0:  # Run until all particles faded
 
             self.screen.blit(self.gradient, pygame.Rect((0, 0, self.screen_width, self.screen_height)))
-
+            #self.no_gradient(self.screen, BG_COLOUR)
             self.draw_platform(lvl.get_platform())
             self.draw(lvl.get_pieces_in_range(self.camera.state.topleft[0], self.camera.state.topright[0]))
             circle_size += 2
@@ -299,12 +309,12 @@ class Game(pygame.sprite.LayeredUpdates):
 
             self.screen.blit(circle, self.camera.apply(circle.get_rect(center=pos)))
 
-            for p in particles:  # Particle check
-                if p.get_alpha() <= 0:
-                    particles.remove(p)
-                else:
-                    p.update()
-                    p.draw(self.screen, self.camera)
+            #for p in particles:  # Particle check
+            #    if p.get_alpha() <= 0:
+            #        particles.remove(p)
+            #    else:
+            #        p.update()
+            #        p.draw(self.screen, self.camera)
             pygame.display.update()
             self.clock.tick(FPS)
 
@@ -480,6 +490,9 @@ class Game(pygame.sprite.LayeredUpdates):
         newFont = pygame.font.Font(textFont, textSize)
         newText = newFont.render(message, True, textColor)
         return newText
+
+    def no_gradient(self,screen,color):
+        screen.fill(color)
 
     def vertical_gradient(self, size, startcolor, endcolor):
         """

@@ -107,7 +107,7 @@ class Game(pygame.sprite.LayeredUpdates):
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
-                    quit()
+                    exit()
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_r:
                         mixer.music.stop()
@@ -140,9 +140,9 @@ class Game(pygame.sprite.LayeredUpdates):
             num_levels = 10
             song = Song(song_name, True)
             print("GENERATING CANDIDATE LEVELS...")
-            critics = [LineCritic(), VarietyCritic(), ComponentFrequencyCritic(), EmptynessCritic(), JumpCritic(), SpeedCritic()]
+            critics = [LineCritic(), VarietyCritic(), ComponentFrequencyCritic(), EmptynessCritic(), JumpCritic()]
 
-            l1 = self.evolve_levels(self.player, song, critics, 200, 20, 0.05, 50) #GA
+            l1 = self.evolve_levels(self.player, song, critics, 100, 10, 0.05, 100) #GA
 
             print("SAVING LEVEL...")
 
@@ -160,9 +160,13 @@ class Game(pygame.sprite.LayeredUpdates):
                 pieces = pickle.load(f)
                 f.close()
 
+
+
                 self.player.gravity = player_grav
                 self.player.set_velocity(int((5 * BOX_SIZE) / song.spb))
-                l1 = Level(song, self.total_level_height, self.player, pieces, self.screen_height,[])
+                l1 = Level(song, self.total_level_height, self.player, pieces, self.screen_height,self.generate_rhythm(song))
+                critics = [LineCritic(), VarietyCritic(), ComponentFrequencyCritic(), EmptynessCritic(), JumpCritic()]
+
 
 
 
@@ -436,35 +440,6 @@ class Game(pygame.sprite.LayeredUpdates):
                                                        new_pieces[i - 1].end_height - 1)
 
         new_pieces[0] = LevelPiece(new_pieces[0].pos, [], [], [], 0, 0) #Enforce empty platform as first piece to give the player soe time to react
-        #DEBUGGING STUFF :) DOESNT DO ANYTHING TO THE FINAL RESULT
-        #final_pieces = []
-        #height_map_new = []
-        #height_map_old = []
-        #different = False
-        #for i in range(0,len(new_pieces)):
-        #    #Generate replacement pieces
-        #    if i == 0:
-        #        final_pieces = [LevelPiece(new_pieces[i].pos,[],[],[],0,0)] #Enforce first piece flat
-        #    else:
-        #        final_pieces += [lvl.choose_level_piece(new_pieces[i].pos, final_pieces[i-1].end_height,
-        #                                               new_pieces[i].end_height)]
-        #    height_map_old += [(start_pieces[i].start_height,start_pieces[i].end_height)]
-        #    height_map_new += [(new_pieces[i].start_height, new_pieces[i].end_height)]
-        #    if start_pieces[i].start_height != new_pieces[i].start_height or start_pieces[i].end_height != new_pieces[i].end_height:
-        #        different = True
-
-        #print("+++++++++++++++++++++++++++++++++++++++")
-        #if different:
-        #    print("CHANGE IN PIECES LISTS")
-        #    print("OLD")
-        #    print(height_map_old)
-        #    print("NEW")
-        #    print(height_map_new)
-        #else:
-        #    print("NO CHANGE IN PIECES LISTS")
-        #    print("OLD")
-        #    print(height_map_old)
-        #print("+++++++++++++++++++++++++++++++++++++++")
         return new_pieces
 
     def simple_camera(self, camera, target_rect):

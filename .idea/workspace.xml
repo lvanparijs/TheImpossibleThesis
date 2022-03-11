@@ -1,0 +1,479 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="BranchesTreeState">
+    <expand />
+    <select />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="b47768ac-5ef1-46f6-bbf4-b719d6eeecbf" name="Default Changelist" comment="Upload for examination purposes">
+      <change afterPath="$PROJECT_DIR$/../TheImpossibleThesis/.idea/.name" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../TheImpossibleThesis/.idea/workspace.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../TheImpossibleThesis/TheImpossibleGame.spec" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../TheImpossibleThesis/lvl/Level0.obj" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../TheImpossibleThesis/lvl/Level1.obj" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../TheImpossibleThesis/lvl/Level2.obj" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../TheImpossibleThesis/lvl/Level3.obj" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../TheImpossibleThesis/lvl/Level4.obj" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../TheImpossibleThesis/lvl/Level5.obj" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../TheImpossibleThesis/lvl/Level6.obj" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../TheImpossibleThesis/lvl/Level7.obj" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../TheImpossibleThesis/lvl/Level8.obj" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../TheImpossibleThesis/lvl/Level9.obj" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../TheImpossibleThesis/res/Level0.wav" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../TheImpossibleThesis/res/Level1.wav" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../TheImpossibleThesis/res/Level2.wav" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../TheImpossibleThesis/res/Level3.wav" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../TheImpossibleThesis/res/Level4.wav" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../TheImpossibleThesis/res/Level5.wav" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../TheImpossibleThesis/res/Level6.wav" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../TheImpossibleThesis/res/Level7.wav" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../TheImpossibleThesis/res/Level8.wav" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../TheImpossibleThesis/res/Level9.wav" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../TheImpossibleThesis/res/countdown.wav" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../TheImpossibleThesis/res/flag.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../TheImpossibleThesis/.idea/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../TheImpossibleThesis/.idea/TheImpossibleThesis.iml" beforeDir="false" afterPath="$PROJECT_DIR$/../TheImpossibleThesis/.idea/TheImpossibleThesis.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../TheImpossibleThesis/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../TheImpossibleThesis/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../TheImpossibleThesis/Game.py" beforeDir="false" afterPath="$PROJECT_DIR$/../TheImpossibleThesis/Game.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../TheImpossibleThesis/Main.py" beforeDir="false" afterPath="$PROJECT_DIR$/../TheImpossibleThesis/TheImpossibleGame.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../TheImpossibleThesis/Song.py" beforeDir="false" afterPath="$PROJECT_DIR$/../TheImpossibleThesis/Song.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../TheImpossibleThesis/res/Beat.wav" beforeDir="false" afterPath="$PROJECT_DIR$/../TheImpossibleThesis/TheImpossibleGame.exe" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ExportToHTMLSettings">
+    <option name="printScope" value="4" />
+    <option name="OUTPUT_DIRECTORY" value="$PROJECT_DIR$/../TheImpossibleThesis\exportToHTML" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="master" />
+      </map>
+    </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/../TheImpossibleThesis" />
+  </component>
+  <component name="ProjectId" id="1xs3exMFs1FBdUo2M1zPPPoRoIW" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../TheImpossibleThesis" />
+    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PythonContentEntriesConfigurable" />
+  </component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\lvanp\PycharmProjects\TheImpossibleThesis" />
+      <recent name="C:\Users\lvanp\PycharmProjects\TheImpossibleThesis\src" />
+      <recent name="C:\Users\lvanp\PycharmProjects\TheImpossibleThesis\src\res" />
+      <recent name="C:\Users\lvanp\PycharmProjects\TheImpossibleThesis\res" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Python.TheImpossibleGame (1)">
+    <configuration name="Player" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="TheImpossibleThesis" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="C:\Users\lvanp\PycharmProjects\TheImpossibleThesis\Player.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Start (1)" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="TheImpossibleThesis" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Start.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Start" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="TheImpossibleThesis" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="C:\Users\lvanp\PycharmProjects\TheImpossibleThesis\Start.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="TheImpossibleGame (1)" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="TheImpossibleThesis" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/TheImpossibleGame.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="TheImpossibleGame" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="TheImpossibleThesis" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="C:\Users\lvanp\PycharmProjects\TheImpossibleThesisUser\TheImpossibleGame.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="main" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
+      <module name="TheImpossibleThesis" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="C:\Users\lvanp\PycharmProjects\TheImpossibleThesis\src\main.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <list>
+      <item itemvalue="Python.main" />
+      <item itemvalue="Python.Player" />
+      <item itemvalue="Python.Start (1)" />
+      <item itemvalue="Python.Start" />
+      <item itemvalue="Python.TheImpossibleGame (1)" />
+      <item itemvalue="Python.TheImpossibleGame" />
+    </list>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Python.TheImpossibleGame (1)" />
+        <item itemvalue="Python.TheImpossibleGame" />
+        <item itemvalue="Python.TheImpossibleGame" />
+        <item itemvalue="Python.Player" />
+        <item itemvalue="Python.Start (1)" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="b47768ac-5ef1-46f6-bbf4-b719d6eeecbf" name="Default Changelist" comment="" />
+      <created>1631130068188</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1631130068188</updated>
+    </task>
+    <task id="LOCAL-00001" summary="Added Geometry Generation Grammar">
+      <created>1637104367558</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1637104367558</updated>
+    </task>
+    <task id="LOCAL-00002" summary="Update Before Meeting">
+      <created>1637149669843</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1637149669843</updated>
+    </task>
+    <task id="LOCAL-00003" summary="Level saving/loading almost done">
+      <created>1637788167004</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1637788167004</updated>
+    </task>
+    <task id="LOCAL-00004" summary="Genetic Algorithm finished">
+      <created>1638218975026</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1638218975026</updated>
+    </task>
+    <task id="LOCAL-00005" summary="Generated a couple of levels with latest GA">
+      <created>1638223769121</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1638223769121</updated>
+    </task>
+    <task id="LOCAL-00006" summary="-Added countdown timer&#10;-Added level selection&#10;-Cleared redundant code&#10;-Made paths to files relative&#10;-Added finish flag&#10;-Decreased level loading times dramatically">
+      <created>1638402016544</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1638402016544</updated>
+    </task>
+    <task id="LOCAL-00007" summary="Added Readme">
+      <created>1638402287773</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1638402287773</updated>
+    </task>
+    <task id="LOCAL-00008" summary="Update">
+      <created>1638472118281</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1638472118282</updated>
+    </task>
+    <task id="LOCAL-00009" summary="removed comment">
+      <created>1638473316228</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1638473316228</updated>
+    </task>
+    <task id="LOCAL-00010" summary="removed unneccesary stuff">
+      <created>1638473849706</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1638473849706</updated>
+    </task>
+    <task id="LOCAL-00011" summary="Tried to remove the immmediate jump at the beginning">
+      <created>1638741100538</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1638741100538</updated>
+    </task>
+    <option name="localTasksCounter" value="12" />
+    <servers />
+  </component>
+  <component name="Vcs.Log.History.Properties">
+    <option name="COLUMN_ORDER">
+      <list>
+        <option value="0" />
+        <option value="2" />
+        <option value="3" />
+        <option value="1" />
+      </list>
+    </option>
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="1">
+          <value>
+            <State>
+              <option name="SHOW_ONLY_AFFECTED_CHANGES" value="true" />
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="HEAD" />
+                      </list>
+                    </value>
+                  </entry>
+                  <entry key="roots">
+                    <value>
+                      <list>
+                        <option value="$PROJECT_DIR$" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+            </State>
+          </value>
+        </entry>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+    <option name="OPEN_GENERIC_TABS">
+      <map>
+        <entry key="1" value="TOOL_WINDOW" />
+      </map>
+    </option>
+    <option name="oldMeFiltersMigrated" value="true" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Added Geometry Generation Grammar" />
+    <MESSAGE value="Update Before Meeting" />
+    <MESSAGE value="Level saving/loading almost done" />
+    <MESSAGE value="Genetic Algorithm finished" />
+    <MESSAGE value="Generated a couple of levels with latest GA" />
+    <MESSAGE value="-Added countdown timer&#10;-Added level selection&#10;-Cleared redundant code&#10;-Made paths to files relative&#10;-Added finish flag&#10;-Decreased level loading times dramatically" />
+    <MESSAGE value="Added Readme" />
+    <MESSAGE value="Update" />
+    <MESSAGE value="removed comment" />
+    <MESSAGE value="removed unneccesary stuff" />
+    <MESSAGE value="Tried to remove the immmediate jump at the beginning" />
+    <MESSAGE value="Upload for examination purposes" />
+    <option name="LAST_COMMIT_MESSAGE" value="Upload for examination purposes" />
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="380" y="169" key="#Notifications" timestamp="1638817153861">
+      <screen x="0" y="0" width="1280" height="689" />
+    </state>
+    <state x="380" y="169" key="#Notifications/0.0.1280.689@0.0.1280.689" timestamp="1638817153861" />
+    <state x="96" y="0" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1638742244709">
+      <screen x="0" y="0" width="1280" height="689" />
+    </state>
+    <state x="96" y="0" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.1280.689@0.0.1280.689" timestamp="1638742244709" />
+    <state x="486" y="214" key="#com.intellij.fileTypes.FileTypeChooser" timestamp="1638742675200">
+      <screen x="0" y="0" width="1280" height="689" />
+    </state>
+    <state x="486" y="214" key="#com.intellij.fileTypes.FileTypeChooser/0.0.1280.689@0.0.1280.689" timestamp="1638742675200" />
+    <state x="371" y="92" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog" timestamp="1638729776348">
+      <screen x="0" y="0" width="1280" height="689" />
+    </state>
+    <state x="371" y="92" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog/0.0.1280.689@0.0.1280.689" timestamp="1638729776348" />
+    <state x="121" y="52" width="1024" height="579" key="DiffContextDialog" timestamp="1638743398511">
+      <screen x="0" y="0" width="1280" height="689" />
+    </state>
+    <state x="121" y="52" width="1024" height="579" key="DiffContextDialog/0.0.1280.689@0.0.1280.689" timestamp="1638743398511" />
+    <state x="493" y="172" key="FileChooserDialogImpl" timestamp="1647004023259">
+      <screen x="0" y="0" width="1280" height="689" />
+    </state>
+    <state x="493" y="172" key="FileChooserDialogImpl/0.0.1280.689@0.0.1280.689" timestamp="1647004023259" />
+    <state width="1259" height="137" key="GridCell.Tab.0.bottom" timestamp="1647003403840">
+      <screen x="0" y="0" width="1280" height="689" />
+    </state>
+    <state width="1259" height="137" key="GridCell.Tab.0.bottom/0.0.1280.689/-1920.-306.1920.1050@0.0.1280.689" timestamp="1643571712309" />
+    <state width="1259" height="137" key="GridCell.Tab.0.bottom/0.0.1280.689@0.0.1280.689" timestamp="1647003403840" />
+    <state width="1259" height="137" key="GridCell.Tab.0.center" timestamp="1647003403840">
+      <screen x="0" y="0" width="1280" height="689" />
+    </state>
+    <state width="1259" height="137" key="GridCell.Tab.0.center/0.0.1280.689/-1920.-306.1920.1050@0.0.1280.689" timestamp="1643571712309" />
+    <state width="1259" height="137" key="GridCell.Tab.0.center/0.0.1280.689@0.0.1280.689" timestamp="1647003403840" />
+    <state width="1259" height="137" key="GridCell.Tab.0.left" timestamp="1647003403840">
+      <screen x="0" y="0" width="1280" height="689" />
+    </state>
+    <state width="1259" height="137" key="GridCell.Tab.0.left/0.0.1280.689/-1920.-306.1920.1050@0.0.1280.689" timestamp="1643571712309" />
+    <state width="1259" height="137" key="GridCell.Tab.0.left/0.0.1280.689@0.0.1280.689" timestamp="1647003403840" />
+    <state width="1259" height="137" key="GridCell.Tab.0.right" timestamp="1647003403840">
+      <screen x="0" y="0" width="1280" height="689" />
+    </state>
+    <state width="1259" height="137" key="GridCell.Tab.0.right/0.0.1280.689/-1920.-306.1920.1050@0.0.1280.689" timestamp="1643571712309" />
+    <state width="1259" height="137" key="GridCell.Tab.0.right/0.0.1280.689@0.0.1280.689" timestamp="1647003403840" />
+    <state width="1259" height="208" key="GridCell.Tab.1.bottom" timestamp="1638750582338">
+      <screen x="0" y="0" width="1280" height="689" />
+    </state>
+    <state width="1259" height="208" key="GridCell.Tab.1.bottom/0.0.1280.689@0.0.1280.689" timestamp="1638750582338" />
+    <state width="1259" height="208" key="GridCell.Tab.1.center" timestamp="1638750582338">
+      <screen x="0" y="0" width="1280" height="689" />
+    </state>
+    <state width="1259" height="208" key="GridCell.Tab.1.center/0.0.1280.689@0.0.1280.689" timestamp="1638750582338" />
+    <state width="1259" height="208" key="GridCell.Tab.1.left" timestamp="1638750582338">
+      <screen x="0" y="0" width="1280" height="689" />
+    </state>
+    <state width="1259" height="208" key="GridCell.Tab.1.left/0.0.1280.689@0.0.1280.689" timestamp="1638750582338" />
+    <state width="1259" height="208" key="GridCell.Tab.1.right" timestamp="1638750582338">
+      <screen x="0" y="0" width="1280" height="689" />
+    </state>
+    <state width="1259" height="208" key="GridCell.Tab.1.right/0.0.1280.689@0.0.1280.689" timestamp="1638750582338" />
+    <state x="419" y="65" key="RollbackChangesDialog" timestamp="1638743441206">
+      <screen x="0" y="0" width="1280" height="689" />
+    </state>
+    <state x="419" y="65" key="RollbackChangesDialog/0.0.1280.689@0.0.1280.689" timestamp="1638743441206" />
+    <state x="142" y="0" key="SettingsEditor" timestamp="1647003290809">
+      <screen x="0" y="0" width="1280" height="689" />
+    </state>
+    <state x="142" y="0" key="SettingsEditor/0.0.1280.689@0.0.1280.689" timestamp="1647003290809" />
+    <state width="498" height="446" key="SwitcherDM" timestamp="1638743427904">
+      <screen x="0" y="0" width="1280" height="689" />
+    </state>
+    <state width="498" height="446" key="SwitcherDM/0.0.1280.689@0.0.1280.689" timestamp="1638743427904" />
+    <state x="233" y="78" key="Vcs.Push.Dialog.v2" timestamp="1638741117113">
+      <screen x="0" y="0" width="1280" height="689" />
+    </state>
+    <state x="233" y="78" key="Vcs.Push.Dialog.v2/0.0.1280.689@0.0.1280.689" timestamp="1638741117113" />
+    <state x="93" y="93" width="1095" height="504" key="com.intellij.history.integration.ui.views.DirectoryHistoryDialog" timestamp="1638744025033">
+      <screen x="0" y="0" width="1280" height="689" />
+    </state>
+    <state x="93" y="93" width="1095" height="504" key="com.intellij.history.integration.ui.views.DirectoryHistoryDialog/0.0.1280.689@0.0.1280.689" timestamp="1638744025033" />
+    <state x="154" y="151" width="1095" height="504" key="com.intellij.history.integration.ui.views.FileHistoryDialog" timestamp="1638818025830">
+      <screen x="0" y="0" width="1280" height="689" />
+    </state>
+    <state x="154" y="151" width="1095" height="504" key="com.intellij.history.integration.ui.views.FileHistoryDialog/0.0.1280.689@0.0.1280.689" timestamp="1638818025830" />
+    <state x="458" y="259" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2" timestamp="1638401945351">
+      <screen x="0" y="0" width="1280" height="689" />
+    </state>
+    <state x="458" y="259" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/0.0.1280.689@0.0.1280.689" timestamp="1638401945351" />
+  </component>
+</project>
